@@ -1,0 +1,17 @@
+
+RTC:
+http://www.digikey.com/product-detail/en/DS1337S%2BT%26R/DS1337S%2BT%26RCT-ND/3894824
+
+LPC812 Microcontroller:
+http://www.digikey.com/product-detail/en/LPC812M101JD20FP/568-10435-5-ND/4368883
+
+Right-angle header (for FTDI serial cable):
+http://www.digikey.com/product-detail/en/0901210126/WM8100-ND/760815
+
+Tiny LED matrix:
+https://www.adafruit.com/products/860
+
+LED Matrix Driver?
+http://www.digikey.com/product-detail/en/MAX6960AMH%2BD/MAX6960AMH%2BD-ND/1513156
+(HT16K33 would be more ideal but can't find a supplier for it right now.)
+
