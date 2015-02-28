@@ -1,6 +1,6 @@
 
 RTC:
-http://www.digikey.com/product-detail/en/DS1337S%2BT%26R/DS1337S%2BT%26RCT-ND/3894824
+http://www.digikey.com/product-detail/en/DS3231MZ%2B/DS3231MZ%2B-ND/2754396
 
 LPC812 Microcontroller:
 http://www.digikey.com/product-detail/en/LPC812M101JD20FP/568-10435-5-ND/4368883
@@ -11,7 +11,9 @@ http://www.digikey.com/product-detail/en/0901210126/WM8100-ND/760815
 Tiny LED matrix:
 https://www.adafruit.com/products/860
 
-LED Matrix Driver?
+LED Matrix Driver
 http://www.digikey.com/product-detail/en/MAX6960AMH%2BD/MAX6960AMH%2BD-ND/1513156
-(HT16K33 would be more ideal but can't find a supplier for it right now.)
+
+3.3V voltage regulator
+http://www.digikey.com/product-detail/en/LD1117S33TR/497-1242-1-ND/586242
 
