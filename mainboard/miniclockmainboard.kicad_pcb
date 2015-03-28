@@ -5,7 +5,7 @@
     (no_connects 0)
     (area 107.949999 102.949999 146.050001 143.050001)
     (thickness 1.6)
-    (drawings 14)
+    (drawings 15)
     (tracks 177)
     (zones 0)
     (modules 15)
@@ -14,8 +14,8 @@
 
   (page A4)
   (layers
-    (0 F.Cu signal hide)
-    (31 B.Cu signal hide)
+    (0 F.Cu signal)
+    (31 B.Cu signal)
     (32 B.Adhes user)
     (33 F.Adhes user)
     (34 B.Paste user)
@@ -862,6 +862,9 @@
     )
   )
 
+  (gr_text "Mini Clock\nMain Board\nv0.1" (at 134.5 136.5) (layer B.SilkS)
+    (effects (font (size 1.5 1.5) (thickness 0.3)) (justify mirror))
+  )
   (target plus (at 110 105) (size 5) (width 0.1) (layer Edge.Cuts))
   (target plus (at 144 105) (size 5) (width 0.1) (layer Edge.Cuts))
   (target plus (at 138.5 141) (size 5) (width 0.1) (layer Edge.Cuts))
