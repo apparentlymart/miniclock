@@ -17,3 +17,6 @@ http://www.digikey.com/product-detail/en/MAX6960AMH%2BD/MAX6960AMH%2BD-ND/151315
 3.3V voltage regulator
 http://www.digikey.com/product-detail/en/LD1117S33TR/497-1242-1-ND/586242
 
+6 Buttons:
+http://www.digikey.com/product-detail/en/FSM4JSMATR/450-1759-2-ND/529675
+
