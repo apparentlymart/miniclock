@@ -1,3 +1,0 @@
-(fp_lib_table
-  (lib (name MiniClock)(type KiCad)(uri ${KIPRJMOD}/../miniclock.pretty)(options "")(descr ""))
-)
