@@ -1,3 +1,6 @@
+#ifndef SERIAL_H
+#define SERIAL_H
+
 #define SBUFSIZE 16
 
 typedef struct {
@@ -17,3 +20,5 @@ void uart_putc(const char c);
 void uart_puts(const char *s);
 
 void uart_println(const char *s);
+
+#endif

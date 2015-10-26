@@ -1,3 +1,5 @@
+#ifndef LPC812_H
+#define LPC812_H
 // lpc810.h
 // LPC low level all-in-one header file for lpc810 devices
 // principally targeted at lpc810 DIP8 package
@@ -268,3 +270,5 @@ typedef unsigned char byte;
 #define SYST_CVR	REGISTER_32(SYS_BASE + 0x18)
 #define SYST_CALIB	REGISTER_32(SYS_BASE + 0x1c)
 
+
+#endif
