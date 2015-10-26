@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "lpc812.h"
 #include "serial.h"
 
@@ -19,6 +20,9 @@ void uart_init() {
     // Take the UART out of reset mode,
     SYSCON_PRESETCTRL |= BIT3;
 
+    // Disable UART0 while we configure it.
+    USART0_CFG = 0;
+
     // Enable USART0 IRQs
     NVIC_ISER0 |= BIT3;
 
@@ -28,18 +32,19 @@ void uart_init() {
     PINASSIGN0 |= 4; // TXD on PIO0_4
     PINASSIGN0 |= 0; // RXD on PIO0_0
 
-    // UART Clock Divider for 9600 baud on 12MHz base clock.
+    // 115200 baud
     SYSCON_UARTCLKDIV = 1;
-    // RX data is sampled 16 times faster than baud rate, so
-    // we need to multiply the intended baud rate by 16.
-    USART0_BRG = 78; // (12000000) / (9600*16);
+    USART0_BRG = 31;
 
-    // Rnable RX interrupt
+    SYSCON_UARTFRGDIV = 0xff;
+    SYSCON_UARTFRGMULT = 4;
+
+    // Enable RX interrupt
     USART0_INTENSET = BIT0;
     USART0_CTL = 0;
 
     // 8 data bits, 1 stop bit, no parity bit
-    USART0_CFG |= BIT2 + BIT9 + BIT0;
+    USART0_CFG = (8 << 2) | (1 << 6) | 1;
 }
 
 void UART0_isr(void) {

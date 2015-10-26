@@ -83,6 +83,25 @@ void init() {
         *dest++ = 0;
     }
 
+    // Configure system to run at 60MHz using the internal
+    // oscillator and the PLL.
+    // (Main clock 60MHz, System clock 30MHz)
+    SYSCON_SYSPLLCLKUEN = 0;
+    SYSCON_SYSPLLCLKSEL = 0;
+    SYSCON_SYSPLLCLKUEN = 1;
+    while (!(SYSCON_SYSPLLCLKUEN & 0x01));
+    SYSCON_SYSPLLCTRL = 4;
+    SYSCON_PDRUNCFG &= ~(0x1 << 7); // Enable PLL
+    while (!(SYSCON_SYSPLLSTAT & 0x01));
+
+    SYSCON_MAINCLKUEN = 0;
+    SYSCON_MAINCLKSEL = 3;
+    SYSCON_MAINCLKUEN = 1;
+    while (!(SYSCON_MAINCLKUEN & 0x01));
+
+    SYSCON_SYSOSCCTRL = 0;
+
+
     // Run the main program.
     main();
 }
