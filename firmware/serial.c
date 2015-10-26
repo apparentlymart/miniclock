@@ -82,12 +82,12 @@ int uart_rx_buffer_count() {
 }
 
 void uart_putc(char c) {
-    int timeout=0xffff;
-    // Poll for the transmitter to become ready, but
-    // time out if it doesn't become ready in time.
-    while ((timeout--) && ((USART0_STAT & BIT2)==0));
+    // Poll for the transmitter to become ready
+    while ((USART0_STAT & (0x1 << 2)) == 0);
 
     USART0_TXDAT = c;
+    // Poll for the transmitter to return to idle
+    while ((USART0_STAT & (0x1 << 3)) == 0);
 }
 
 void uart_puts(const char *s) {
