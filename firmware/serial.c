@@ -86,6 +86,7 @@ void uart_putc(char c) {
     while ((USART0_STAT & (0x1 << 2)) == 0);
 
     USART0_TXDAT = c;
+
     // Poll for the transmitter to return to idle
     while ((USART0_STAT & (0x1 << 3)) == 0);
 }
@@ -93,7 +94,6 @@ void uart_putc(char c) {
 void uart_puts(const char *s) {
     for (; *s; s++) {
         uart_putc(*s);
-        s++;
     }
 }
 
