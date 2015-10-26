@@ -7,7 +7,6 @@ void main() {
 
     uart_init();
     while (1) {
-        uart_println("Hello world!");
+        uart_println("Hello world!\r\n");
     }
 }
-
