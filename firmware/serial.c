@@ -44,7 +44,7 @@ void uart_init() {
     USART0_CTL = 0;
 
     // 8 data bits, 1 stop bit, no parity bit
-    USART0_CFG = (8 << 2) | (1 << 6) | 1;
+    USART0_CFG = 0b00000101;
 }
 
 void UART0_isr(void) {
