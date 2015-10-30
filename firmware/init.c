@@ -85,7 +85,7 @@ void init() {
 
     // Configure system to run at 60MHz using the internal
     // oscillator and the PLL.
-    // (Main clock 60MHz, System clock 30MHz)
+    // (Main clock 60MHz, System clock 60MHz)
     SYSCON_SYSPLLCLKUEN = 0;
     SYSCON_SYSPLLCLKSEL = 0;
     SYSCON_SYSPLLCLKUEN = 1;
@@ -97,6 +97,7 @@ void init() {
     SYSCON_MAINCLKUEN = 0;
     SYSCON_MAINCLKSEL = 3;
     SYSCON_MAINCLKUEN = 1;
+    SYSCON_SYSAHBCLKDIV = 1; // System clock == Main clock ( / 1 )
     while (!(SYSCON_MAINCLKUEN & 0x01));
 
     SYSCON_SYSOSCCTRL = 0;
