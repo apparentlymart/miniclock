@@ -270,5 +270,18 @@ typedef unsigned char byte;
 #define SYST_CVR	REGISTER_32(SYS_BASE + 0x18)
 #define SYST_CALIB	REGISTER_32(SYS_BASE + 0x1c)
 
+// Pin Interrupts
+#define PINT_ISEL			REGISTER_32(PIN_INT_BASE + 0x0)
+#define PINT_IENR			REGISTER_32(PIN_INT_BASE + 0x4)
+#define PINT_SIENR			REGISTER_32(PIN_INT_BASE + 0x8)
+#define PINT_CIENR			REGISTER_32(PIN_INT_BASE + 0xC)
+#define PINT_IENF			REGISTER_32(PIN_INT_BASE + 0x10)
+#define PINT_SIENF			REGISTER_32(PIN_INT_BASE + 0x14)
+#define PINT_CIENF			REGISTER_32(PIN_INT_BASE + 0x18)
+#define PINT_RISE			REGISTER_32(PIN_INT_BASE + 0x1C)
+#define PINT_FALL			REGISTER_32(PIN_INT_BASE + 0x20)
+#define PINT_IST			REGISTER_32(PIN_INT_BASE + 0x24)
+// ...pattern matching engine interrupts ignored for now.
+// See user guide section 8.6.11 and onwards for details.
 
 #endif

@@ -3,9 +3,14 @@
 void init(void);
 void clock_init();
 void default_irq_handler(void);
+void hard_fault_handler(void);
+void nmi_handler(void);
 
 // Exported by serial.o
 extern void UART0_isr(void);
+
+// Exported by main.o
+extern void GPIO_isr(void);
 
 // The linker script refers to these, placing them at the boundaries
 // between sections.
@@ -19,8 +24,8 @@ extern unsigned char BSS_END;
 const void * Vectors[] __attribute__((section(".vectors"))) = {
     (void *)(RAM_START+RAM_SIZE),   /* Top of stack */
     init,                           /* Reset Handler */
-    default_irq_handler,            /* NMI */
-    default_irq_handler,            /* Hard Fault */
+    nmi_handler,                    /* NMI */
+    hard_fault_handler,             /* Hard Fault */
     0,                              /* Reserved */
     0,                              /* Reserved */
     0,                              /* Reserved */
@@ -56,14 +61,14 @@ const void * Vectors[] __attribute__((section(".vectors"))) = {
     default_irq_handler,            /* 21 RESERVED */
     default_irq_handler,            /* 22 RESERVED */
     default_irq_handler,            /* 23 RESERVED */
-    default_irq_handler,            /* 24 PININT0_IRQ */
-    default_irq_handler,            /* 25 PININT1_IRQ */
-    default_irq_handler,            /* 26 PININT2_IRQ */
-    default_irq_handler,            /* 27 PININT3_IRQ */
-    default_irq_handler,            /* 28 PININT4_IRQ */
-    default_irq_handler,            /* 29 PININT5_IRQ */
-    default_irq_handler,            /* 30 PININT6_IRQ */
-    default_irq_handler,            /* 31 PININT7_IRQ */
+    GPIO_isr,                       /* 24 PININT0_IRQ */
+    GPIO_isr,                       /* 25 PININT1_IRQ */
+    GPIO_isr,                       /* 26 PININT2_IRQ */
+    GPIO_isr,                       /* 27 PININT3_IRQ */
+    GPIO_isr,                       /* 28 PININT4_IRQ */
+    GPIO_isr,                       /* 29 PININT5_IRQ */
+    GPIO_isr,                       /* 30 PININT6_IRQ */
+    GPIO_isr,                       /* 31 PININT7_IRQ */
 };
 
 void init() {
@@ -107,8 +112,39 @@ void init() {
     main();
 }
 
+void spin_wave(unsigned char threshold) {
+    // For the moment we have pin 15 available to probe as a debugging
+    // output. This will stop being true once we have a display
+    // connected, but for the moment we'll pulse GPIO0_15 in a loop
+    // as the signal that we've executed an invalid interrupt.
+    unsigned char count;
+    while (1) {
+        count++;
+        if (count < threshold) {
+            GPIO_B15 = 1;
+        }
+        else {
+            GPIO_B15 = 0;
+        }
+    }
+}
+
 void default_irq_handler() {
+    // For the moment we have pin 15 available to probe as a debugging
+    // output. This will stop being true once we have a display
+    // connected, but for the moment we'll pulse GPIO0_15 in a loop
+    // as the signal that we've executed an invalid interrupt.
+    spin_wave(127);
+    /*
     // Sadly we don't have any simple output devices through which we
     // can signal an error safely, so we'll just halt.
-    while(1);
+    while(1);*/
+}
+
+void hard_fault_handler() {
+    spin_wave(63);
+}
+
+void nmi_handler() {
+    spin_wave(63 + 127);
 }
