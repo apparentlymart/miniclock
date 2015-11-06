@@ -2,7 +2,7 @@ CC=arm-none-eabi-gcc
 AS=arm-none-eabi-as
 LD=arm-none-eabi-ld
 
-CCFLAGS=-mcpu=cortex-m0 -mthumb -g -Os
+CCFLAGS=-mcpu=cortex-m0 -mthumb -g -Os -std=gnu11
 SOURCE_FILES=$(wildcard *.c)
 OBJ_FILES=$(patsubst %.c,%.o,$(SOURCE_FILES))
 HEADERS=$(wildcard *.h)
