@@ -9,6 +9,9 @@ void nmi_handler(void);
 // Exported by serial.o
 extern void UART0_isr(void);
 
+// Exported by i2c.o
+extern void I2C_isr(void);
+
 // Exported by main.o
 extern void GPIO_isr(void);
 
@@ -48,7 +51,7 @@ const void * Vectors[] __attribute__((section(".vectors"))) = {
     default_irq_handler,            /* 5 UART2_IRQ */
     default_irq_handler,            /* 6 RESERVED */
     default_irq_handler,            /* 7 RESERVED */
-    default_irq_handler,            /* 8 I2C0_IRQ */
+    I2C_isr,                        /* 8 I2C0_IRQ */
     default_irq_handler,            /* 9 SCT_IRQ */
     default_irq_handler,            /* 10 MRT_IRQ */
     default_irq_handler,            /* 11 CMP_IRQ */

@@ -97,6 +97,26 @@ void uart_puts(const char *s) {
     }
 }
 
+void uart_put_int_hex(unsigned int val) {
+    for (int i = 0; i < 8; i++) {
+        // Read the top nybble.
+        int digit = val >> 28;
+
+        char c;
+        if (digit < 0xa) {
+            c = '0' + digit;
+        }
+        else {
+            c = ('a' - 0xa) + digit;
+        }
+
+        uart_putc(c);
+
+        // Push everything up one nybble.
+        val <<= 4;
+    }
+}
+
 char uart_getc() {
     return uart_buffer_get(&rx_buffer);
 }

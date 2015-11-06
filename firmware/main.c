@@ -1,6 +1,7 @@
 
 #include "lpc812.h"
 #include "serial.h"
+#include "i2c.h"
 
 volatile int pressed = 0;
 
@@ -34,16 +35,24 @@ void main() {
     // Enable GPIO port clock
     SYSCON_SYSAHBCLKCTRL |= BIT6;
 
-    // Pin 15 is an output, as a temporary debugging signal.
+    // Pins 15 and 1 is a outputs, as temporary debugging signals.
     GPIO_DIRP0 |= 1 << 15;
+    GPIO_DIRP0 |= 1 << 1;
 
     uart_init();
+    i2c_init();
+    uart_puts("\x1b[2J");
     while (1) {
         if (pressed) {
             uart_println("Button press world!\r\n");
         }
         else {
-            uart_println("Hello world!\r\n");
+            i2c_puts("", 1); // write null for address 0
+            char buf[3];
+            i2c_gets((char*)&buf, 3);
+            int time_val = ((buf[2] & 0b11111) << 16) | (buf[1] << 8) | buf[0];
+            uart_puts("\x1b[0;0H");
+            uart_put_int_hex(time_val);
         }
     }
 }

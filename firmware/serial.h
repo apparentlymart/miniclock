@@ -18,6 +18,7 @@ int uart_rx_buffer_count();
 char uart_getc(void);
 void uart_putc(const char c);
 void uart_puts(const char *s);
+void uart_put_int_hex(unsigned int val);
 
 void uart_println(const char *s);
 

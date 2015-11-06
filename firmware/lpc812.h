@@ -284,4 +284,24 @@ typedef unsigned char byte;
 // ...pattern matching engine interrupts ignored for now.
 // See user guide section 8.6.11 and onwards for details.
 
+// I2C
+#define I2C_CFG             REGISTER_32(I2C_BASE + 0x00)
+#define I2C_STAT            REGISTER_32(I2C_BASE + 0x04)
+#define I2C_INTENSET        REGISTER_32(I2C_BASE + 0x08)
+#define I2C_INTENCLR        REGISTER_32(I2C_BASE + 0x0c)
+#define I2C_TIMEOUT         REGISTER_32(I2C_BASE + 0x10)
+#define I2C_CLKDIV          REGISTER_32(I2C_BASE + 0x14)
+#define I2C_INTSTAT         REGISTER_32(I2C_BASE + 0x18)
+#define I2C_MSTCTL          REGISTER_32(I2C_BASE + 0x20)
+#define I2C_MSTTIME         REGISTER_32(I2C_BASE + 0x24)
+#define I2C_MSTDAT          REGISTER_32(I2C_BASE + 0x28)
+#define I2C_SLVCTL          REGISTER_32(I2C_BASE + 0x40)
+#define I2C_SLVDAT          REGISTER_32(I2C_BASE + 0x44)
+#define I2C_SLVADR0         REGISTER_32(I2C_BASE + 0x48)
+#define I2C_SLVADR1         REGISTER_32(I2C_BASE + 0x4c)
+#define I2C_SLVADR2         REGISTER_32(I2C_BASE + 0x50)
+#define I2C_SLVADR3         REGISTER_32(I2C_BASE + 0x54)
+#define I2C_SLVQUAL0        REGISTER_32(I2C_BASE + 0x58)
+#define I2C_MONRXDAT        REGISTER_32(I2C_BASE + 0x80)
+
 #endif
