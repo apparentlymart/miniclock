@@ -22,4 +22,4 @@ clean:
 	rm -f $(OBJ_FILES) firmware.hex firmware.elf
 
 upload: firmware.hex
-	lpc21isp $< /dev/ttyUSB0 115200 14746
+	lpc21isp $< /dev/miniclock 115200 14746
