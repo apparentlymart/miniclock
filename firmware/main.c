@@ -2,6 +2,7 @@
 #include "lpc812.h"
 #include "serial.h"
 #include "i2c.h"
+#include "scheduler.h"
 
 volatile int pressed = 0;
 
@@ -9,6 +10,29 @@ void GPIO_isr(void) {
     pressed = !GPIO_W13;
     GPIO_B15 = pressed;
     PINT_IST = 0b11111;
+}
+
+void test_task(void) {
+    static void *task_pos = 0;
+    static sched_task task;
+    if (task_pos != 0) {
+        goto *task_pos;
+    }
+    sched_init_task(&task, test_task);
+    sched_run_task(&task);
+    task_pos = &&task_start;
+    return;
+
+ task_start:
+    uart_println("I'm a test task");
+    task_pos = &&task_continue;
+    task_sleep(&task, 1000);
+    return;
+ task_continue:
+    uart_println("I'm still a test task");
+    task_pos = &&task_start;
+    task_sleep(&task, 1000);
+    return;
 }
 
 void main() {
@@ -28,8 +52,11 @@ void main() {
     NVIC_ISER0 |= BIT27;
     NVIC_ISER0 |= BIT28;
 
-    // Turn on detection of both rising and falling edges.
-    PINT_SIENR = 0b11111;
+    // Turn on detection of both rising and falling edges,
+    // except for the 1Hz square wave where we only care
+    // about falling, since that's where the second
+    // increments.
+    PINT_SIENR = 0b01111;
     PINT_SIENF = 0b11111;
 
     // Enable GPIO port clock
@@ -38,6 +65,12 @@ void main() {
     // Pins 15 and 1 is a outputs, as temporary debugging signals.
     GPIO_DIRP0 |= 1 << 15;
     GPIO_DIRP0 |= 1 << 1;
+
+    uart_init();
+    uart_println("\x1b[2J\x1b[0;0Hbegin");
+    sched_init();
+    test_task();
+    sched_main_loop(); // does not return
 
     uart_init();
     i2c_init();

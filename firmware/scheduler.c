@@ -1,6 +1,9 @@
 #include "lpc812.h"
 #include "scheduler.h"
 
+// Temporarily for debugging
+#include "serial.h"
+
 // List of tasks that are currently runnable.
 // On each main loop iteration these all get to progress to their next
 // blocking operation.
@@ -18,21 +21,80 @@ sched_list_head timer_tasks;
 // signal from the external real-time clock.
 volatile int millis = 0;
 
+void SysTick_isr(void) {
+    millis += 10;
+}
+
+static inline void init_systick(void) {
+    // Enable SysTick interrupt
+    SYST_CSR |= (
+        1 << 0 |
+        1 << 1 |
+        1 << 2
+    );
+
+    // SysTick reset value (60MHz clock * 10ms) - 1
+    SYST_RVR = 599999;
+}
+
+static inline void handle_timer_tasks(int loop_millis) {
+    // Walk timer_tasks and make runnable any task whose
+    // target time is less than loop_millis.
+    sched_list_head *next;
+    for (
+        sched_list_head *current = timer_tasks.next;
+        current != &timer_tasks;
+        current = next
+    ) {
+        sched_timer_task *current_timer = (sched_timer_task*)current;
+        if (current_timer->wake_time > loop_millis) {
+            // The timer tasks list is maintained in order of ascending
+            // wake_time, so this task and all tasks after it are in
+            // the future and won't be processed on this iteration.
+            return;
+        }
+
+        next = current->next;
+        sched_run_task((sched_task*)current);
+    }
+}
+
+static inline void handle_runnable_tasks() {
+    // Walk runnable_tasks and run each task so it can
+    // progress to its next blocking operation.
+    // TODO: Detect when runnable_tasks is empty -- that
+    // is, when we've deadlocked -- and deal with it
+    // in some reasonable way. Reset?
+    sched_list_head *next;
+    for (
+        sched_list_head *current = runnable_tasks.next;
+        current != &runnable_tasks;
+        current = next
+    ) {
+        sched_task *current_task = (sched_task*)current;
+        sched_task_impl impl = current_task->impl;
+        // The implementation should proceed to its next blocking call,
+        // remove itself from runnable_tasks (by putting itself into
+        // a different queue) and then return.
+        next = current->next;
+        impl();
+    }
+}
+
+void sched_init(void) {
+    init_systick();
+    sched_init_task_head(&runnable_tasks);
+    sched_init_task_head(&timer_tasks);
+}
+
 void sched_main_loop(void) {
     while (1) {
-        // Take a snapshot of millis so that we know it'll remain
-        // constant through a single loop, and so the volatility of
-        // millis doesn't inhibit optimizations after this point.
-        int loop_millis = millis;
+        // Pass in a snapshot of millis so that we know it'll remain
+        // constant through the call, and so the volatility of
+        // millis doesn't inhibit optimizations within this function.
+        handle_timer_tasks(millis);
 
-        // TODO: Walk timer_tasks and make runnable any task whose
-        // target time is less than loop_millis.
-
-        // TODO: Walk runnable_tasks and run each task so it can
-        // progress to its next blocking operation.
-
-        // TODO: Inspect the next timer task and set up the wake-up timer
-        // so we'll get interrupted no later than that task is due.
+        handle_runnable_tasks();
 
         // Wait until we get an interrupt.
         __asm volatile ("wfi");
@@ -43,20 +105,46 @@ void sched_main_loop(void) {
     }
 }
 
-void sched_run_task(sched_list_head *task) {
+void sched_init_task_head(sched_list_head *task) {
+    // A task that's alone in a list points to itself.
+    task->next = task;
+    task->prev = task;
+}
+
+// Always call this on a newly-allocated task to ensure that its
+// linked list pointers are correctly initialized before using it
+// with other list-manipulation functions.
+void sched_init_task(sched_task *task, sched_task_impl impl) {
+    sched_init_task_head(&(task->list));
+    task->impl = impl;
+}
+
+void sched_run_task(sched_task *task) {
     sched_queue_task(&runnable_tasks, task);
 }
 
-void sched_queue_task(sched_list_head *queue, sched_list_head *task) {
-    // TODO: Twiddle the pointers in both the queue and the task
-    // so that the given task is at the end of the given queue.
+void sched_queue_task(sched_list_head *queue, sched_task *task) {
+    disable_interrupts();
+
+    // Heal the hole we're leaving in any list we're already in.
+    task->list.prev->next = task->list.next;
+    task->list.next->prev = task->list.prev;
+
+    task->list.prev = queue->prev;
+    task->list.next = queue;
+    queue->prev->next = (sched_list_head*)task;
+    queue->prev = (sched_list_head*)task;
+
+    enable_interrupts();
 }
 
-void sched_sleep(sched_task *task, int wake_after_millis) {
+void task_sleep(sched_task *task, int wake_after_millis) {
     // Reinterpret the given generic task as a timer task
     // so we can write our target time into the data area.
     sched_timer_task *timer_task = (sched_timer_task*)task;
     timer_task->wake_time = millis + wake_after_millis;
 
-    sched_queue_task(&timer_tasks, (sched_list_head*)task);
+    // TODO: We're supposed to maintain this list in ascending order
+    // of wake_time, so we actually need to insert in a custom way here.
+    sched_queue_task(&timer_tasks, task);
 }

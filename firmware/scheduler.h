@@ -3,14 +3,16 @@
 
 #define MILLIS_PER_WKT_TICK 100
 
-struct sched_list_head_s;
+typedef void (*sched_task_impl)(void);
 
-typedef struct {
+struct sched_list_head_s {
     struct sched_list_head_s *next;
     struct sched_list_head_s *prev;
-} sched_list_head;
+};
 
-#define SCHED_TASK_COMMON sched_list_head list; void (*impl)(void)
+typedef struct sched_list_head_s sched_list_head;
+
+#define SCHED_TASK_COMMON sched_list_head list; sched_task_impl impl
 
 typedef struct {
     SCHED_TASK_COMMON;
@@ -24,11 +26,16 @@ typedef struct {
     int wake_time;
 } sched_timer_task;
 
-void sched_run_task(sched_list_head *task);
-void sched_queue_task(sched_list_head *queue, sched_list_head *task);
+// sched_ functions are API for drivers to call.
+void sched_init_task_head(sched_list_head *task);
+void sched_init_task(sched_task *task, sched_task_impl impl);
+void sched_run_task(sched_task *task);
+void sched_queue_task(sched_list_head *queue, sched_task *task);
 
+void sched_init(void);
 void sched_main_loop(void);
 
-void sched_sleep(sched_task *task, int millis);
+// task_ functions are API for tasks to call.
+void task_sleep(sched_task *task, int millis);
 
 #endif

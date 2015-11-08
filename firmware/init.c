@@ -12,6 +12,9 @@ extern void UART0_isr(void);
 // Exported by i2c.o
 extern void I2C_isr(void);
 
+// Exported by scheduler.o
+extern void SysTick_isr(void);
+
 // Exported by main.o
 extern void GPIO_isr(void);
 
@@ -40,7 +43,7 @@ const void * Vectors[] __attribute__((section(".vectors"))) = {
     0,                              /* Reserved */
     0,                              /* Reserved */
     default_irq_handler,            /* PendSV */
-    default_irq_handler,            /* SysTick */
+    SysTick_isr,                    /* SysTick */
 
     // Interrupt handlers
     default_irq_handler,            /* 0 SPI0_IRQ */
