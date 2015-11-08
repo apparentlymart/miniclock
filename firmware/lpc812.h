@@ -68,7 +68,7 @@ typedef unsigned char byte;
 // APB stuff
 #define WWDT_BASE			0x40000000
 #define MRT_BASE			0x40004000
-#define WAKE_UP_BASE		0x40008000
+#define WKT_BASE            0x40008000
 #define SWITCH_MATRIX_BASE 	0x4000c000
 #define PMU_BASE			0x40020000
 #define ANLG_COMP_BASE		0x40024000
@@ -151,6 +151,10 @@ typedef unsigned char byte;
 #define GPIO_SETP0			REGISTER_32(GPIO_BASE + 0x2200)
 #define GPIO_CLRP0			REGISTER_32(GPIO_BASE + 0x2280)
 #define GPIO_NOTP0			REGISTER_32(GPIO_BASE + 0x2300)
+
+// Wake-up timer
+#define WKT_CTRL            REGISTER_32(WKT_BASE + 0x0)
+#define WKT_COUNT           REGISTER_32(WKT_BASE + 0xc)
 
 // Switch Matrix
 #define PINASSIGN0			REGISTER_32(SWITCH_MATRIX_BASE + 0x0)
