@@ -15,6 +15,9 @@ extern void I2C_isr(void);
 // Exported by scheduler.o
 extern void SysTick_isr(void);
 
+// Exported by buttons.o
+extern void Buttons_isr(void);
+
 // Exported by main.o
 extern void GPIO_isr(void);
 
@@ -70,10 +73,10 @@ const void * Vectors[] __attribute__((section(".vectors"))) = {
     default_irq_handler,            /* 21 RESERVED */
     default_irq_handler,            /* 22 RESERVED */
     default_irq_handler,            /* 23 RESERVED */
-    GPIO_isr,                       /* 24 PININT0_IRQ */
-    GPIO_isr,                       /* 25 PININT1_IRQ */
-    GPIO_isr,                       /* 26 PININT2_IRQ */
-    GPIO_isr,                       /* 27 PININT3_IRQ */
+    Buttons_isr,                    /* 24 PININT0_IRQ */
+    Buttons_isr,                    /* 25 PININT1_IRQ */
+    Buttons_isr,                    /* 26 PININT2_IRQ */
+    Buttons_isr,                    /* 27 PININT3_IRQ */
     GPIO_isr,                       /* 28 PININT4_IRQ */
     GPIO_isr,                       /* 29 PININT5_IRQ */
     GPIO_isr,                       /* 30 PININT6_IRQ */

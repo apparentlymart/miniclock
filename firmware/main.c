@@ -2,50 +2,51 @@
 #include "lpc812.h"
 #include "serial.h"
 #include "i2c.h"
+#include "buttons.h"
 #include "scheduler.h"
 
 volatile int pressed = 0;
 
 void GPIO_isr(void) {
-    pressed = !GPIO_W13;
-    GPIO_B15 = pressed;
-    PINT_IST = 0b11111;
+    PINT_IST = 0b10000;
 }
 
 void test_task(void) {
     TASK_START(test_task);
 
+    static unsigned int buttons = 0;
+
+    uart_println("I'm a test task");
+    TASK_SLEEP(1000);
+    uart_println("Try pressing the direction keys");
     while (1) {
-        uart_println("I'm a test task");
-        TASK_SLEEP(1000);
-        uart_println("I'm still a test task");
-        TASK_SLEEP(1000);
+        BUTTONS_READ(&buttons);
+        if (buttons & BUTTON_UP) {
+            uart_println("up");
+        }
+        if (buttons & BUTTON_DOWN) {
+            uart_println("down");
+        }
+        if (buttons & BUTTON_LEFT) {
+            uart_println("left");
+        }
+        if (buttons & BUTTON_RIGHT) {
+            uart_println("right");
+        }
     }
 }
 
 void main() {
     enable_interrupts();
 
-    // Set up the GPIO interrupts.
-    SYSCON_PINTSEL0 = 17; // Up
-    SYSCON_PINTSEL1 = 13; // Down
-    SYSCON_PINTSEL2 = 3; // Left
-    SYSCON_PINTSEL3 = 2; // Right
-    SYSCON_PINTSEL4 = 16; // 1Hz square wave from RTC
+    buttons_init();
 
-    // Enable IRQs for the GPIO interrupts.
-    NVIC_ISER0 |= BIT24;
-    NVIC_ISER0 |= BIT25;
-    NVIC_ISER0 |= BIT26;
-    NVIC_ISER0 |= BIT27;
+    // Detect falling edge of the 1Hz square wave signal
+    // from the RTC, which will cause us to wake up each
+    // time the second value changes.
+    SYSCON_PINTSEL4 = 16;
     NVIC_ISER0 |= BIT28;
-
-    // Turn on detection of both rising and falling edges,
-    // except for the 1Hz square wave where we only care
-    // about falling, since that's where the second
-    // increments.
-    PINT_SIENR = 0b01111;
-    PINT_SIENF = 0b11111;
+    PINT_SIENF |= 1 << 4;
 
     // Enable GPIO port clock
     SYSCON_SYSAHBCLKCTRL |= BIT6;

@@ -138,6 +138,20 @@ void sched_queue_task(sched_list_head *queue, sched_task *task) {
     enable_interrupts();
 }
 
+void sched_dequeue_task(sched_task *task) {
+    disable_interrupts();
+
+    // Heal the hole we're leaving in any list we're already in.
+    task->list.prev->next = task->list.next;
+    task->list.next->prev = task->list.prev;
+
+    // A task that's alone points to itself.
+    task->list.next = (sched_list_head*)task;
+    task->list.prev = (sched_list_head*)task;
+
+    enable_interrupts();
+}
+
 void task_sleep(sched_task *task, int wake_after_millis) {
     // Reinterpret the given generic task as a timer task
     // so we can write our target time into the data area.

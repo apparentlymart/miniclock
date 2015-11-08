@@ -31,6 +31,7 @@ void sched_init_task_head(sched_list_head *task);
 void sched_init_task(sched_task *task, sched_task_impl impl);
 void sched_run_task(sched_task *task);
 void sched_queue_task(sched_list_head *queue, sched_task *task);
+void sched_dequeue_task(sched_task *task);
 
 void sched_init(void);
 void sched_main_loop(void);
