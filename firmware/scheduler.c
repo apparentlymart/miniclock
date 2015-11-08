@@ -144,7 +144,26 @@ void task_sleep(sched_task *task, int wake_after_millis) {
     sched_timer_task *timer_task = (sched_timer_task*)task;
     timer_task->wake_time = millis + wake_after_millis;
 
-    // TODO: We're supposed to maintain this list in ascending order
-    // of wake_time, so we actually need to insert in a custom way here.
-    sched_queue_task(&timer_tasks, task);
+    // Find a suitable place to insert the task into the timer tasks,
+    // retaining the ascending order of wake_time.
+    sched_list_head *next;
+    sched_list_head *current;
+    for (
+        current = timer_tasks.next;
+        current != &timer_tasks;
+        current = next
+    ) {
+        sched_timer_task *current_timer = (sched_timer_task*)current;
+        if (current_timer->wake_time > timer_task->wake_time) {
+            break;
+        }
+    }
+
+    // Once we fall out here, "current" will either be the first task
+    // whose wake_time is larger then the new task, or the timer_tasks
+    // list head if no wake_time is larger.
+    // Here we kinda-abuse sched_queue_task by giving it what might
+    // actually not be a queue as its "queue", depending on the fact
+    // that it'll insert our task before whatever we give it.
+    sched_queue_task(current, task);
 }
