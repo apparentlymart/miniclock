@@ -56,6 +56,9 @@ const void * Vectors[] __attribute__((section(".vectors"))) = {
     default_irq_handler,            /* 10 MRT_IRQ */
     default_irq_handler,            /* 11 CMP_IRQ */
     default_irq_handler,            /* 12 WDT_IRQ */
+    default_irq_handler,            /* 13 BOD_IRQ */
+    default_irq_handler,            /* 14 RESERVED */
+    default_irq_handler,            /* 15 WKT_IRQ */
     default_irq_handler,            /* 16 RESERVED */
     default_irq_handler,            /* 17 RESERVED */
     default_irq_handler,            /* 18 RESERVED */
