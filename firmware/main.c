@@ -13,26 +13,14 @@ void GPIO_isr(void) {
 }
 
 void test_task(void) {
-    static void *task_pos = 0;
-    static sched_task task;
-    if (task_pos != 0) {
-        goto *task_pos;
-    }
-    sched_init_task(&task, test_task);
-    sched_run_task(&task);
-    task_pos = &&task_start;
-    return;
+    TASK_START(test_task);
 
- task_start:
-    uart_println("I'm a test task");
-    task_pos = &&task_continue;
-    task_sleep(&task, 1000);
-    return;
- task_continue:
-    uart_println("I'm still a test task");
-    task_pos = &&task_start;
-    task_sleep(&task, 1000);
-    return;
+    while (1) {
+        uart_println("I'm a test task");
+        TASK_SLEEP(1000);
+        uart_println("I'm still a test task");
+        TASK_SLEEP(1000);
+    }
 }
 
 void main() {

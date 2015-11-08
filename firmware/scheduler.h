@@ -38,4 +38,32 @@ void sched_main_loop(void);
 // task_ functions are API for tasks to call.
 void task_sleep(sched_task *task, int millis);
 
+// Helper macros to produce the protothread boilerplate for
+// task implementations.
+
+// TASK_START must be the very first "statement" in a task implementation
+// function, and its argument must be the name of the task function.
+#define TASK_START(name)                 \
+    static void *__task_pos = 0;         \
+    static sched_task __task;            \
+    if (__task_pos != 0) {               \
+        goto *__task_pos;                \
+    }                                    \
+    sched_init_task(&__task, name);      \
+    sched_run_task(&__task);             \
+    __task_pos = &&__task_start;         \
+    return;                              \
+    __task_start:
+
+// This extra indirection is required to get __LINE__ to actually expand.
+#define TASK_LINE_LABEL_ACTUAL(line) __task_cont_ ## line
+#define TASK_LINE_LABEL(line) TASK_LINE_LABEL_ACTUAL(line)
+#define TASK_AWAIT_RAW(setup_expr)            \
+    __task_pos = &&TASK_LINE_LABEL(__LINE__); \
+    (setup_expr);                             \
+    return;                                   \
+    TASK_LINE_LABEL(__LINE__):
+
+#define TASK_SLEEP(sleep_time) TASK_AWAIT_RAW(task_sleep(&__task, (sleep_time)))
+
 #endif
