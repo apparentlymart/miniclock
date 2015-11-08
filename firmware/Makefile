@@ -1,11 +1,12 @@
 CC=arm-none-eabi-gcc
 AS=arm-none-eabi-as
-LD=arm-none-eabi-ld
+LD=arm-none-eabi-gcc
 
 CCFLAGS=-mcpu=cortex-m0 -mthumb -g -Os -std=gnu11
 SOURCE_FILES=$(wildcard *.c)
 OBJ_FILES=$(patsubst %.c,%.o,$(SOURCE_FILES))
 HEADERS=$(wildcard *.h)
+LIBSPEC=-lgcc
 
 all: firmware.hex
 
@@ -13,7 +14,7 @@ all: firmware.hex
 	objcopy -O ihex $< $@
 
 firmware.elf: $(OBJ_FILES)
-	$(LD) $(OBJ_FILES) $(LIBSPEC) -T lpc812_linker_script.ld --cref -Map main.map -nostartfiles -o $@
+	$(LD) $(OBJ_FILES) $(LIBSPEC) -T lpc812_linker_script.ld -nostartfiles -o $@
 
 %.o: %.c $(HEADERS)
 	$(CC) -c $(CCFLAGS) $< -o $@
