@@ -21,5 +21,6 @@ void uart_puts(const char *s);
 void uart_put_int_hex(unsigned int val);
 
 void uart_println(const char *s);
+void uart_println_int_hex(const char *caption, unsigned int val);
 
 #endif

@@ -125,3 +125,9 @@ void uart_println(const char *s) {
     uart_puts(s);
     uart_puts("\r\n");
 }
+
+void uart_println_int_hex(const char *s, unsigned int val) {
+    uart_puts(s);
+    uart_put_int_hex(val);
+    uart_puts("\r\n");
+}
