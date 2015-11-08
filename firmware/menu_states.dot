@@ -1,0 +1,101 @@
+
+digraph "G" {
+    overlap = scale;
+    splines = curved;
+
+    "time_hm" [style="filled"];
+    "date_wd";
+    "date_dm";
+    "time_ms";
+    "menu_set_time";
+    "menu_set_date";
+    "set_hour";
+    "set_min";
+    "set_sec";
+    "set_year";
+    "set_month";
+    "set_day";
+    "inc_hour" [shape="diamond"];
+    "inc_min" [shape="diamond"];
+    "reset_sec" [shape="diamond"];
+    "inc_year" [shape="diamond"];
+    "inc_month" [shape="diamond"];
+    "inc_day" [shape="diamond"];
+    "dec_hour" [shape="diamond"];
+    "dec_min" [shape="diamond"];
+    "dec_year" [shape="diamond"];
+    "dec_month" [shape="diamond"];
+    "dec_day" [shape="diamond"];
+
+    "time_hm" -> "time_ms" [label="left"];
+    "time_ms" -> "time_hm" [label="right"];
+
+    "date_wd" -> "date_dm" [label="left"];
+    "date_dm" -> "date_wd" [label="right"];
+
+    "time_hm" -> "date_wd" [label="up"];
+    "time_hm" -> "date_wd" [label="down"];
+    "date_wd" -> "time_hm" [label="up"];
+    "date_wd" -> "time_hm" [label="down"];
+
+    "date_dm" -> "time_hm" [label="up"];
+    "date_dm" -> "time_hm" [label="down"];
+    "time_ms" -> "date_wd" [label="up"];
+    "time_ms" -> "date_wd" [label="down"];
+
+    "time_hm" -> "menu_set_time" [label="right"];
+    "date_wd" -> "menu_set_time" [label="right"];
+    "menu_set_time" -> "time_hm" [label="left"];
+    "menu_set_date" -> "time_hm" [label="left"];
+
+    "menu_set_time" -> "menu_set_date" [label="down"];
+    "menu_set_time" -> "menu_set_date" [label="up"];
+    "menu_set_date" -> "menu_set_time" [label="down"];
+    "menu_set_date" -> "menu_set_time" [label="up"];
+
+    "menu_set_time" -> "set_hour" [label="right"];
+    "set_hour" -> "menu_set_time" [label="left"];
+    "set_hour" -> "set_min" [label="right"];
+    "set_min" -> "set_hour" [label="left"];
+    "set_min" -> "set_sec" [label="right"];
+    "set_sec" -> "set_min" [label="left"];
+
+    "menu_set_date" -> "set_year" [label="right"];
+    "set_year" -> "menu_set_date" [label="left"];
+    "set_year" -> "set_month" [label="right"];
+    "set_month" -> "set_year" [label="left"];
+    "set_month" -> "set_day" [label="right"];
+    "set_day" -> "set_month" [label="left"];
+
+    "set_hour" -> "inc_hour" [label="up"];
+    "inc_hour" -> "set_hour" [style="dashed"];
+    "set_hour" -> "dec_hour" [label="down"];
+    "dec_hour" -> "set_hour" [style="dashed"];
+
+    "set_min" -> "inc_min" [label="up"];
+    "inc_min" -> "set_min" [style="dashed"];
+    "set_min" -> "dec_min" [label="down"];
+    "dec_min" -> "set_min" [style="dashed"];
+
+    "set_sec" -> "reset_sec" [label="up"];
+    "set_sec" -> "reset_sec" [label="down"];
+    "reset_sec" -> "set_sec" [style="dashed"];
+
+    "set_year" -> "inc_year" [label="up"];
+    "inc_year" -> "set_year" [style="dashed"];
+    "set_year" -> "dec_year" [label="down"];
+    "dec_year" -> "set_year" [style="dashed"];
+
+    "set_month" -> "inc_month" [label="up"];
+    "inc_month" -> "set_month" [style="dashed"];
+    "set_month" -> "dec_month" [label="down"];
+    "dec_month" -> "set_month" [style="dashed"];
+
+    "set_day" -> "inc_day" [label="up"];
+    "inc_day" -> "set_day" [style="dashed"];
+    "set_day" -> "dec_day" [label="down"];
+    "dec_day" -> "set_day" [style="dashed"];
+
+}
+
+
