@@ -160,12 +160,11 @@ void task_sleep(sched_task *task, int wake_after_millis) {
 
     // Find a suitable place to insert the task into the timer tasks,
     // retaining the ascending order of wake_time.
-    sched_list_head *next;
     sched_list_head *current;
     for (
         current = timer_tasks.next;
         current != &timer_tasks;
-        current = next
+        current = current->next
     ) {
         sched_timer_task *current_timer = (sched_timer_task*)current;
         if (current_timer->wake_time > timer_task->wake_time) {
