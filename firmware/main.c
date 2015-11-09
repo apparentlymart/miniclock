@@ -3,6 +3,7 @@
 #include "serial.h"
 #include "i2c.h"
 #include "buttons.h"
+#include "ui.h"
 #include "scheduler.h"
 
 volatile int pressed = 0;
@@ -58,7 +59,8 @@ void main() {
     uart_init();
     uart_println("\x1b[2J\x1b[0;0Hbegin");
     sched_init();
-    test_task();
+    //test_task();
+    ui_task();
     sched_main_loop(); // does not return
 
     uart_init();
