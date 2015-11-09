@@ -14,13 +14,56 @@ sched_task *active_transition_task = 0;
 // animating in, with the second index pointing to the bottom or right
 // state. When we're not showing two states on-screen, only the first
 // index is significant.
-ui_state display_states[2];
-ui_state current_state = UI_BEGIN;
-ui_state previous_state = UI_BEGIN;
-int anim_frame = 0;
+ui_state display_states[2] = {UI_BEGIN, UI_BEGIN};
+char offset_amt;
+unsigned char offset_dir = 'h';
 
 sched_task anim_dispatch_task;
 sched_task anim_task;
+void *anim_task_pos;
+
+void display_render(void) {
+    uart_println_int_hex("\x1b[2J\x1b[0;0HState 0: ", display_states[0]);
+    uart_println_int_hex("State 1: ", display_states[1]);
+    uart_println("");
+    uart_println_int_hex("Transition Offset:    ", (int)offset_amt);
+    uart_println_int_hex("Transition Direction: ", (int)offset_dir);
+}
+
+void anim_to_right_task(void) {
+    TASK_START_EXT(anim_task, anim_task_pos);
+
+    offset_dir = 'h';
+    for (offset_amt = 1; offset_amt < 24; offset_amt++) {
+        display_render();
+        TASK_AWAIT_EXT_RAW(anim_task_pos, task_sleep(&anim_task, 10));
+    }
+
+    // End with the new state filling the whole screen.
+    offset_amt = 0;
+    display_states[0] = display_states[1];
+    display_render();
+
+    sched_dequeue_task(&anim_task);
+    sched_run_task(&anim_dispatch_task);
+}
+
+void anim_to_left_task(void) {
+    TASK_START_EXT(anim_task, anim_task_pos);
+
+    offset_dir = 'h';
+    for (offset_amt = 23; offset_amt > 0; offset_amt--) {
+        display_render();
+        TASK_AWAIT_EXT_RAW(anim_task_pos, task_sleep(&anim_task, 10));
+    }
+
+    // End with the new state filling the whole screen.
+    offset_amt = 0;
+    display_render();
+
+    sched_dequeue_task(&anim_task);
+    sched_run_task(&anim_dispatch_task);
+}
 
 void anim_dispatch_task_impl(void) {
 
@@ -42,11 +85,21 @@ void anim_dispatch_task_impl(void) {
         sched_dequeue_task(task);
         active_transition_task = task;
 
-        previous_state = trans_task->old_state;
-        current_state = trans_task->new_state;
+        if (trans_task->buttons == BUTTON_LEFT) {
+            display_states[0] = trans_task->new_state;
+            display_states[1] = trans_task->old_state;
+            anim_task.impl = anim_to_left_task;
+        }
+        else {
+            display_states[0] = trans_task->old_state;
+            display_states[1] = trans_task->new_state;
+            anim_task.impl = anim_to_right_task;
+        }
 
-        // TODO: Choose an anim implementation, assign it into anim_task,
-        // and then schedule anim_task to run.
+        anim_task_pos = 0;
+        // Call the task implementation to let it initialize
+        // and schedule itself.
+        anim_task.impl();
     }
     else {
         // No longer any animations active.

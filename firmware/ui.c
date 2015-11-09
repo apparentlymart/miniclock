@@ -14,10 +14,6 @@ void ui_task(void) {
 
     while (1) {
         if (state != old_state) {
-            // TODO: Notify the display of the state change.
-            // State change is a blocking operation so that the
-            // display can do an animation.
-            // For now, some debug output.
             DISPLAY_STATE_CHANGE(state, old_state, buttons);
         }
         BUTTONS_READ(&buttons);
