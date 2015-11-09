@@ -19,7 +19,7 @@ sched_list_head timer_tasks;
 // timer is only accurate to +/-40% so this *will* drift.
 // For more accurate timing at only 1 second resolution, use the 1Hz
 // signal from the external real-time clock.
-volatile int millis = 0;
+volatile unsigned int millis = 0;
 
 void SysTick_isr(void) {
     millis += 10;

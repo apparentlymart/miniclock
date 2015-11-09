@@ -3,6 +3,8 @@
 
 #define MILLIS_PER_WKT_TICK 100
 
+extern volatile unsigned int millis;
+
 typedef void (*sched_task_impl)(void);
 
 struct sched_list_head_s {
