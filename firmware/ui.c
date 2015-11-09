@@ -3,6 +3,7 @@
 #include "buttons.h"
 #include "serial.h"
 #include "ui.h"
+#include "display.h"
 
 void ui_task(void) {
     TASK_START(ui_task);
@@ -17,9 +18,7 @@ void ui_task(void) {
             // State change is a blocking operation so that the
             // display can do an animation.
             // For now, some debug output.
-            uart_println("UI state changed");
-            uart_println_int_hex("Old State: ", (unsigned int)old_state);
-            uart_println_int_hex("New State: ", (unsigned int)state);
+            DISPLAY_STATE_CHANGE(state, old_state, buttons);
         }
         BUTTONS_READ(&buttons);
         old_state = state;
