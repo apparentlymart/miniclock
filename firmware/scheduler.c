@@ -62,9 +62,6 @@ static inline void handle_timer_tasks(int loop_millis) {
 static inline void handle_runnable_tasks() {
     // Walk runnable_tasks and run each task so it can
     // progress to its next blocking operation.
-    // TODO: Detect when runnable_tasks is empty -- that
-    // is, when we've deadlocked -- and deal with it
-    // in some reasonable way. Reset?
     sched_list_head *next;
     for (
         sched_list_head *current = runnable_tasks.next;
