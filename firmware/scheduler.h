@@ -58,6 +58,22 @@ void task_sleep(sched_task *task, int millis);
     return;                              \
     __task_start:
 
+// TASK_START_EXT is a variant of TASK_START that works with an
+// already-existing and already-initalized task object. This
+// allows multiple tasks to share the same state as long as
+// they are guaranteed never to be active concurrently.
+// When working in this mode the task must use TASK_AWAIT_EXT_RAW directly,
+// rather than using the wrappers that assume the task will be in
+// &__task.
+#define TASK_START_EXT(task, pos_ptr)    \
+    if ((pos_ptr) != 0) {                \
+        goto *(pos_ptr);                 \
+    }                                    \
+    (pos_ptr) = &&__task_start;          \
+    sched_run_task(&task);               \
+    return;                              \
+    __task_start:
+
 // This extra indirection is required to get __LINE__ to actually expand.
 #define TASK_LINE_LABEL_ACTUAL(line) __task_cont_ ## line
 #define TASK_LINE_LABEL(line) TASK_LINE_LABEL_ACTUAL(line)
@@ -65,6 +81,11 @@ void task_sleep(sched_task *task, int millis);
     __task_pos = &&TASK_LINE_LABEL(__LINE__); \
     (setup_expr);                             \
     return;                                   \
+    TASK_LINE_LABEL(__LINE__):
+#define TASK_AWAIT_EXT_RAW(pos_ptr, setup_expr) \
+    (pos_ptr) = &&TASK_LINE_LABEL(__LINE__);    \
+    (setup_expr);                               \
+    return;                                     \
     TASK_LINE_LABEL(__LINE__):
 
 #define TASK_SLEEP(sleep_time) TASK_AWAIT_RAW(task_sleep(&__task, (sleep_time)))
