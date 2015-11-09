@@ -3,6 +3,7 @@
 #include "serial.h"
 #include "buttons.h"
 #include "ui.h"
+#include "digits.h"
 #include "display.h"
 
 int anim_active = 0;
@@ -22,12 +23,78 @@ sched_task anim_dispatch_task;
 sched_task anim_task;
 void *anim_task_pos;
 
+const unsigned char space_row_data = 0;
+const unsigned char colon_row_data = 0b00010100;
+
+const unsigned char* display_space_row(int num, int row) {
+    return row < num ? &space_row_data : 0;
+}
+
+const unsigned char* display_colon_row(int dummy, int row) {
+    return row == 0 ? &colon_row_data : 0;
+}
+
+display_elem elems_time_hm[] = {
+    { display_space_row, 2 },
+    { digits_row, 4 },
+    { display_space_row, 1 },
+    { digits_row, 3 },
+    { display_space_row, 1 },
+    { display_colon_row, 0 },
+    { display_space_row, 1 },
+    { digits_row, 2 },
+    { display_space_row, 1 },
+    { digits_row, 1 },
+    { 0, 0 },
+};
+
+void display_render_row_to_uart(unsigned char data) {
+    for (int i = 0; i < 8; i++) {
+        uart_putc(data & 0b10000000 ? 'O' : ' ');
+        data <<= 1;
+    }
+    uart_puts("\r\n");
+}
+
+void display_render_to_uart(display_elem *elems) {
+    if (! elems) {
+        // Was given elems for a state that isn't implemented yet.
+    }
+    int elem_row = 0;
+    int screen_row = 0;
+    while (1) {
+        if (! elems->impl) {
+            // Elements terminator.
+            break;
+        }
+        const unsigned char *data_p = elems->impl(elems->arg, elem_row);
+        if (! data_p) {
+            elem_row = 0;
+            elems++;
+            continue;
+        }
+
+        if (screen_row >= offset_amt) {
+            display_render_row_to_uart(*data_p);
+        }
+
+        elem_row++;
+        screen_row++;
+    }
+    // Blank out any rows we skipped due to the offset.
+    for (int i = 0; i < offset_amt; i++) {
+        display_render_row_to_uart(0);
+    }
+}
+
 void display_render(void) {
-    uart_println_int_hex("\x1b[2J\x1b[0;0HState 0: ", display_states[0]);
+    uart_println_int_hex("\x1b[0;0HState 0: ", display_states[0]);
     uart_println_int_hex("State 1: ", display_states[1]);
     uart_println("");
     uart_println_int_hex("Transition Offset:    ", (int)offset_amt);
     uart_println_int_hex("Transition Direction: ", (int)offset_dir);
+
+    display_render_to_uart((display_elem*)&elems_time_hm);
 }
 
 void anim_to_right_task(void) {

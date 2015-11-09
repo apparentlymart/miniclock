@@ -12,6 +12,13 @@ typedef struct {
     button buttons;
 } display_transition_task;
 
+typedef const unsigned char * (*display_elem_func)(int arg, int row);
+
+typedef struct {
+    display_elem_func impl;
+    int arg;
+} display_elem;
+
 void display_init(void);
 
 void display_state_change(
