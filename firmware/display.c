@@ -56,7 +56,10 @@ void display_render_row_to_uart(unsigned char data) {
     uart_puts("\r\n");
 }
 
-void display_render_to_uart() {
+void display_render_to_uart_horiz(void) {
+    // For Horiz, we visit rows in the first state first,
+    // and then rows in the second state, until we've
+    // filled the screen.
     int elem_row = 0;
     int state_row = 0;
     int screen_row = 0;
@@ -116,6 +119,67 @@ void display_render_to_uart() {
     }
 }
 
+void display_render_to_uart_vert(void) {
+    // For vert, we visit both states concurrently and then shift their
+    // pixel data about to make them render one on top of the other.
+
+    // Keep track of where we are in the elems of both states.
+    int elem_rows[2] = {0, 0};
+    display_elem *elems[2] = {
+        (display_elem*)&elems_time_hm,
+        (display_elem*)&elems_time_hm
+    };
+    unsigned char data[2] = {0, 0};
+
+    for (int screen_row = 0; screen_row < 24; screen_row++) {
+        for (int state_idx = 0; state_idx < 2; state_idx++) {
+            while (1) {
+                if (elems[state_idx]->impl) {
+                    const unsigned char *data_p = elems[state_idx]->impl(
+                        elems[state_idx]->arg, elem_rows[state_idx]
+                    );
+
+                    if (data_p) {
+                        data[state_idx] = *data_p;
+                        elem_rows[state_idx]++;
+                        break;
+                    }
+
+                    // Try the next element, then.
+                    elem_rows[state_idx] = 0;
+                    elems[state_idx]++;
+                }
+                else {
+                    // We ran out of elements for this state, so
+                    // we'll just fill the rest of the screen with
+                    // blanks.
+                    data[state_idx] = 0b00000000;
+                    break;
+                }
+            }
+        }
+        unsigned char merged_data = (
+            data[0] >> offset_amt |
+            data[1] << (8 - offset_amt)
+        );
+        display_render_row_to_uart(merged_data);
+    }
+
+}
+
+inline void display_render_to_uart(void) {
+    switch (offset_dir) {
+    case 'h':
+        display_render_to_uart_horiz();
+        break;
+    case 'v':
+        display_render_to_uart_vert();
+        break;
+    default:
+        uart_println("Invalid offset direction");
+    }
+}
+
 void display_render(void) {
     uart_println_int_hex("\x1b[0;0HState 0: ", display_states[0]);
     uart_println_int_hex("State 1: ", display_states[1]);
@@ -161,6 +225,23 @@ void anim_to_left_task(void) {
     sched_run_task(&anim_dispatch_task);
 }
 
+void anim_down_task(void) {
+    TASK_START_EXT(anim_task, anim_task_pos);
+
+    offset_dir = 'v';
+    for (offset_amt = 0; offset_amt < 8; offset_amt++) {
+        display_render();
+        TASK_AWAIT_EXT_RAW(anim_task_pos, task_sleep(&anim_task, 10));
+    }
+
+    // End with the new state filling the whole screen.
+    offset_amt = 0;
+    display_render();
+
+    sched_dequeue_task(&anim_task);
+    sched_run_task(&anim_dispatch_task);
+}
+
 void anim_dispatch_task_impl(void) {
 
     // This task impl expects to be called only when either there is no
@@ -185,6 +266,11 @@ void anim_dispatch_task_impl(void) {
             display_states[0] = trans_task->new_state;
             display_states[1] = trans_task->old_state;
             anim_task.impl = anim_to_left_task;
+        }
+        if (trans_task->buttons == BUTTON_DOWN) {
+            display_states[0] = trans_task->new_state;
+            display_states[1] = trans_task->old_state;
+            anim_task.impl = anim_down_task;
         }
         else {
             display_states[0] = trans_task->old_state;
