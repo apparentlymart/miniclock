@@ -4,6 +4,7 @@
 #include "buttons.h"
 #include "ui.h"
 #include "digits.h"
+#include "display_states.h"
 #include "display.h"
 
 int anim_active = 0;
@@ -24,31 +25,6 @@ sched_task anim_dispatch_task;
 sched_task anim_task;
 void *anim_task_pos;
 
-const unsigned char space_row_data = 0;
-const unsigned char colon_row_data = 0b00010100;
-
-const unsigned char* display_space_row(int num, int row) {
-    return row < num ? &space_row_data : 0;
-}
-
-const unsigned char* display_colon_row(int dummy, int row) {
-    return row == 0 ? &colon_row_data : 0;
-}
-
-display_elem elems_time_hm[] = {
-    { display_space_row, 2 },
-    { digits_row, 4 },
-    { display_space_row, 1 },
-    { digits_row, 3 },
-    { display_space_row, 1 },
-    { display_colon_row, 0 },
-    { display_space_row, 1 },
-    { digits_row, 2 },
-    { display_space_row, 1 },
-    { digits_row, 1 },
-    { 0, 0 },
-};
-
 void display_render_row_to_uart(unsigned char data) {
     for (int i = 0; i < 8; i++) {
         uart_putc(data & 0b10000000 ? 'O' : ' ');
@@ -66,7 +42,7 @@ void display_render_to_uart_horiz(void) {
     int screen_row = 0;
     int state_idx = 0;
     int skipped_rows = 0;
-    display_elem *elems = (display_elem*)&elems_time_hm;
+    display_elem *elems = display_elems_for_state(display_states[0]);
     while (1) {
         if (state_row == 24 || screen_row == 24 || ! elems->impl) {
             // If we're still on the first state, we must complete it
@@ -80,7 +56,7 @@ void display_render_to_uart_horiz(void) {
                 if (screen_row < 24) {
                     state_idx++;
                     state_row = 0;
-                    elems = (display_elem*)&elems_time_hm;
+                    elems = display_elems_for_state(display_states[1]);
                 }
                 else {
                     break;
@@ -127,8 +103,8 @@ void display_render_to_uart_vert(void) {
     // Keep track of where we are in the elems of both states.
     int elem_rows[2] = {0, 0};
     display_elem *elems[2] = {
-        (display_elem*)&elems_time_hm,
-        (display_elem*)&elems_time_hm
+        display_elems_for_state(display_states[0]),
+        display_elems_for_state(display_states[1]),
     };
     unsigned char data[2] = {0, 0};
 
