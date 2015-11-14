@@ -17,6 +17,7 @@ sched_task *active_transition_task = 0;
 // index is significant.
 ui_state display_states[2] = {UI_BEGIN, UI_BEGIN};
 char offset_amt;
+char offset_target;
 unsigned char offset_dir = 'h';
 
 sched_task anim_dispatch_task;
@@ -190,52 +191,32 @@ void display_render(void) {
     display_render_to_uart();
 }
 
-void anim_to_right_task(void) {
+void anim_offset_task(void) {
     TASK_START_EXT(anim_task, anim_task_pos);
 
+    while (1) {
+        display_render();
+        TASK_AWAIT_EXT_RAW(anim_task_pos, task_sleep(&anim_task, 10));
+        if (offset_target < offset_amt) {
+            offset_amt--;
+        }
+        else if (offset_target > offset_amt) {
+            offset_amt++;
+        }
+        if (offset_target == offset_amt) {
+            break;
+        }
+    }
+
+    // Always end in a consistent state.
+    offset_amt = 0;
     offset_dir = 'h';
-    for (offset_amt = 1; offset_amt < 24; offset_amt++) {
-        display_render();
-        TASK_AWAIT_EXT_RAW(anim_task_pos, task_sleep(&anim_task, 10));
+    // If we were moving away from zero then we actually want
+    // to land on the second state, so we need to swap them now.
+    if (offset_target != 0) {
+        display_states[0] = display_states[1];
+        offset_target = 0;
     }
-
-    // End with the new state filling the whole screen.
-    offset_amt = 0;
-    display_states[0] = display_states[1];
-    display_render();
-
-    sched_dequeue_task(&anim_task);
-    sched_run_task(&anim_dispatch_task);
-}
-
-void anim_to_left_task(void) {
-    TASK_START_EXT(anim_task, anim_task_pos);
-
-    offset_dir = 'h';
-    for (offset_amt = 23; offset_amt > 0; offset_amt--) {
-        display_render();
-        TASK_AWAIT_EXT_RAW(anim_task_pos, task_sleep(&anim_task, 10));
-    }
-
-    // End with the new state filling the whole screen.
-    offset_amt = 0;
-    display_render();
-
-    sched_dequeue_task(&anim_task);
-    sched_run_task(&anim_dispatch_task);
-}
-
-void anim_down_task(void) {
-    TASK_START_EXT(anim_task, anim_task_pos);
-
-    offset_dir = 'v';
-    for (offset_amt = 0; offset_amt < 8; offset_amt++) {
-        display_render();
-        TASK_AWAIT_EXT_RAW(anim_task_pos, task_sleep(&anim_task, 10));
-    }
-
-    // End with the new state filling the whole screen.
-    offset_amt = 0;
     display_render();
 
     sched_dequeue_task(&anim_task);
@@ -263,19 +244,48 @@ void anim_dispatch_task_impl(void) {
         active_transition_task = task;
 
         if (trans_task->buttons == BUTTON_LEFT) {
+            offset_dir = 'h';
+            offset_amt = 23;
+            offset_target = 0;
             display_states[0] = trans_task->new_state;
             display_states[1] = trans_task->old_state;
-            anim_task.impl = anim_to_left_task;
+            anim_task.impl = anim_offset_task;
         }
-        if (trans_task->buttons == BUTTON_DOWN) {
-            display_states[0] = trans_task->new_state;
-            display_states[1] = trans_task->old_state;
-            anim_task.impl = anim_down_task;
-        }
-        else {
+        else if (trans_task->buttons == BUTTON_RIGHT) {
+            offset_dir = 'h';
+            offset_amt = 0;
+            offset_target = 23;
             display_states[0] = trans_task->old_state;
             display_states[1] = trans_task->new_state;
-            anim_task.impl = anim_to_right_task;
+            anim_task.impl = anim_offset_task;
+        }
+        else if (trans_task->buttons == BUTTON_DOWN) {
+            offset_dir = 'v';
+            offset_amt = 0;
+            offset_target = 7;
+            display_states[0] = trans_task->old_state;
+            display_states[1] = trans_task->new_state;
+            anim_task.impl = anim_offset_task;
+        }
+        else if (trans_task->buttons == BUTTON_UP) {
+            offset_dir = 'v';
+            offset_amt = 7;
+            offset_target = 0;
+            display_states[0] = trans_task->new_state;
+            display_states[1] = trans_task->old_state;
+            anim_task.impl = anim_offset_task;
+        }
+        else {
+            // By default we'll use the anim_offset_task but give
+            // it no work to do, so we'll just instantly transition
+            // to the new state. This should never happen in practice
+            // since one of the above rules should always apply.
+            offset_dir = 'h';
+            offset_amt = 0;
+            offset_target = 0;
+            display_states[0] = trans_task->new_state;
+            display_states[1] = trans_task->new_state;
+            anim_task.impl = anim_offset_task;
         }
 
         anim_task_pos = 0;
