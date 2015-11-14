@@ -8,6 +8,7 @@ typedef const unsigned char * (*display_elem_func)(int arg, int row);
 typedef struct {
     display_elem_func impl;
     int arg;
+    unsigned char blink;
 } display_elem;
 
 display_elem* display_elems_for_state(ui_state state);

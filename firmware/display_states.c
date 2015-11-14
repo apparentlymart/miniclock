@@ -60,36 +60,36 @@ const unsigned char* clock_element_row(int element, int row) {
 }
 
 display_elem elems_empty[] = {
-    { display_space_row, 1 },
-    { 0, 0 },
+    { display_space_row, 1, 0 },
+    { 0, 0, 0 },
 };
 
 display_elem elems_time_hm[] = {
-    { display_space_row, 2 },
-    { clock_element_row, HOUR_TENS },
-    { display_space_row, 1 },
-    { clock_element_row, HOUR_UNITS },
-    { display_space_row, 1 },
-    { display_colon_row, 0 },
-    { display_space_row, 1 },
-    { clock_element_row, MINUTE_TENS },
-    { display_space_row, 1 },
-    { clock_element_row, MINUTE_UNITS },
-    { 0, 0 },
+    { display_space_row, 2, 0 },
+    { clock_element_row, HOUR_TENS, 0 },
+    { display_space_row, 1, 0 },
+    { clock_element_row, HOUR_UNITS, 0 },
+    { display_space_row, 1, 0 },
+    { display_colon_row, 0, 1 },
+    { display_space_row, 1, 0 },
+    { clock_element_row, MINUTE_TENS, 0 },
+    { display_space_row, 1, 0 },
+    { clock_element_row, MINUTE_UNITS, 0 },
+    { 0, 0, 0 },
 };
 
 display_elem elems_time_ms[] = {
-    { display_space_row, 2 },
-    { clock_element_row, MINUTE_TENS },
-    { display_space_row, 1 },
-    { clock_element_row, MINUTE_UNITS },
-    { display_space_row, 1 },
-    { display_colon_row, 0 },
-    { display_space_row, 1 },
-    { clock_element_row, SECOND_TENS },
-    { display_space_row, 1 },
-    { clock_element_row, SECOND_UNITS },
-    { 0, 0 },
+    { display_space_row, 2, 0 },
+    { clock_element_row, MINUTE_TENS, 0 },
+    { display_space_row, 1, 0 },
+    { clock_element_row, MINUTE_UNITS, 0 },
+    { display_space_row, 1, 0 },
+    { display_colon_row, 0, 1 },
+    { display_space_row, 1, 0 },
+    { clock_element_row, SECOND_TENS, 0 },
+    { display_space_row, 1, 0 },
+    { clock_element_row, SECOND_UNITS, 0 },
+    { 0, 0, 0 },
 };
 
 display_elem* display_elems_for_state(ui_state state) {

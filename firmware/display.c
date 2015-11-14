@@ -91,7 +91,14 @@ void display_render_to_uart_horiz(void) {
             continue;
         }
 
-        display_render_row_to_uart(*data_p);
+        if (elems->blink && ! clock_time.half_second) {
+            // For blinking elements, render blank if we're in
+            // the second half of a second.
+            display_render_row_to_uart(0b00000000);
+        }
+        else {
+            display_render_row_to_uart(*data_p);
+        }
 
         elem_row++;
         screen_row++;
@@ -120,7 +127,14 @@ void display_render_to_uart_vert(void) {
                     );
 
                     if (data_p) {
-                        data[state_idx] = *data_p;
+                        if (elems[state_idx]->blink && ! clock_time.half_second) {
+                            // For blinking elements, render blank if we're in
+                            // the second half of a second.
+                            data[state_idx] = 0b00000000;
+                        }
+                        else {
+                            data[state_idx] = *data_p;
+                        }
                         elem_rows[state_idx]++;
                         break;
                     }
