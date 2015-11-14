@@ -1,6 +1,22 @@
 
 #include "display_states.h"
+#include "clock.h"
 #include "digits.h"
+
+typedef enum {
+    SECOND_UNITS,
+    SECOND_TENS,
+    MINUTE_UNITS,
+    MINUTE_TENS,
+    HOUR_UNITS,
+    HOUR_TENS,
+    WEEKDAY,
+    DATE_UNITS,
+    DATE_TENS,
+    MONTH,
+    YEAR_UNITS,
+    YEAR_TENS,
+} TIME_ELEMENT;
 
 const unsigned char space_row_data = 0;
 const unsigned char colon_row_data = 0b00010100;
@@ -13,6 +29,36 @@ const unsigned char* display_colon_row(int dummy, int row) {
     return row == 0 ? &colon_row_data : 0;
 }
 
+const unsigned char* clock_element_row(int element, int row) {
+    int val = 0;
+    switch (element) {
+    case HOUR_TENS:
+        val = clock_time.hours_bcd >> 4;
+        goto digit;
+    case HOUR_UNITS:
+        val = clock_time.hours_bcd & 0b1111;
+        goto digit;
+    case MINUTE_TENS:
+        val = clock_time.minutes_bcd >> 4;
+        goto digit;
+    case MINUTE_UNITS:
+        val = clock_time.minutes_bcd & 0b1111;
+        goto digit;
+    case SECOND_TENS:
+        val = clock_time.seconds_bcd >> 4;
+        goto digit;
+    case SECOND_UNITS:
+        val = clock_time.seconds_bcd & 0b1111;
+        goto digit;
+    default:
+        // Invalid clock element
+        return 0b00000000;
+    }
+
+ digit:
+    return digits_row(val, row);
+}
+
 display_elem elems_empty[] = {
     { display_space_row, 1 },
     { 0, 0 },
@@ -20,15 +66,29 @@ display_elem elems_empty[] = {
 
 display_elem elems_time_hm[] = {
     { display_space_row, 2 },
-    { digits_row, 4 },
+    { clock_element_row, HOUR_TENS },
     { display_space_row, 1 },
-    { digits_row, 3 },
+    { clock_element_row, HOUR_UNITS },
     { display_space_row, 1 },
     { display_colon_row, 0 },
     { display_space_row, 1 },
-    { digits_row, 2 },
+    { clock_element_row, MINUTE_TENS },
     { display_space_row, 1 },
-    { digits_row, 1 },
+    { clock_element_row, MINUTE_UNITS },
+    { 0, 0 },
+};
+
+display_elem elems_time_ms[] = {
+    { display_space_row, 2 },
+    { clock_element_row, MINUTE_TENS },
+    { display_space_row, 1 },
+    { clock_element_row, MINUTE_UNITS },
+    { display_space_row, 1 },
+    { display_colon_row, 0 },
+    { display_space_row, 1 },
+    { clock_element_row, SECOND_TENS },
+    { display_space_row, 1 },
+    { clock_element_row, SECOND_UNITS },
     { 0, 0 },
 };
 
@@ -36,6 +96,8 @@ display_elem* display_elems_for_state(ui_state state) {
     switch (state) {
     case UI_TIME_HM:
       return (display_elem*)elems_time_hm;
+    case UI_TIME_MS:
+      return (display_elem*)elems_time_ms;
     default:
       return (display_elem*)elems_empty;
     }

@@ -5,6 +5,7 @@
 #include "ui.h"
 #include "digits.h"
 #include "display_states.h"
+#include "clock.h"
 #include "display.h"
 
 int anim_active = 0;
@@ -24,6 +25,8 @@ unsigned char offset_dir = 'h';
 sched_task anim_dispatch_task;
 sched_task anim_task;
 void *anim_task_pos;
+
+sched_task time_change_task;
 
 void display_render_row_to_uart(unsigned char data) {
     for (int i = 0; i < 8; i++) {
@@ -280,13 +283,27 @@ void anim_dispatch_task_impl(void) {
     sched_dequeue_task(&anim_dispatch_task);
 }
 
+static void time_change_task_impl(void) {
+    TASK_START(time_change_task_impl);
+
+    while (1) {
+        CLOCK_AWAIT_CHANGE();
+        display_render();
+    }
+}
+
 void display_init(void) {
     sched_init_task_head(&transition_tasks);
     sched_init_task(&anim_dispatch_task, anim_dispatch_task_impl);
+    sched_init_task(&time_change_task, time_change_task_impl);
 
     // The anim task's implementation will be assigned by the
     // dispatch task, once it decides what kind of animation to use.
     sched_init_task(&anim_task, 0);
+
+    // Immediately schedule our "time change task" so we'll get notified
+    // each time the time changes. (every half-second)
+    time_change_task_impl();
 }
 
 void display_state_change(

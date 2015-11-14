@@ -18,8 +18,8 @@ extern void SysTick_isr(void);
 // Exported by buttons.o
 extern void Buttons_isr(void);
 
-// Exported by main.o
-extern void GPIO_isr(void);
+// Exported by clock.o
+extern void RTC_tick_isr(void);
 
 // The linker script refers to these, placing them at the boundaries
 // between sections.
@@ -77,10 +77,10 @@ const void * Vectors[] __attribute__((section(".vectors"))) = {
     Buttons_isr,                    /* 25 PININT1_IRQ */
     Buttons_isr,                    /* 26 PININT2_IRQ */
     Buttons_isr,                    /* 27 PININT3_IRQ */
-    GPIO_isr,                       /* 28 PININT4_IRQ */
-    GPIO_isr,                       /* 29 PININT5_IRQ */
-    GPIO_isr,                       /* 30 PININT6_IRQ */
-    GPIO_isr,                       /* 31 PININT7_IRQ */
+    RTC_tick_isr,                   /* 28 PININT4_IRQ */
+    default_irq_handler,            /* 29 PININT5_IRQ */
+    default_irq_handler,            /* 30 PININT6_IRQ */
+    default_irq_handler,            /* 31 PININT7_IRQ */
 };
 
 void init() {
