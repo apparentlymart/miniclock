@@ -56,16 +56,41 @@ void display_render_row_to_uart(unsigned char data) {
     uart_puts("\r\n");
 }
 
-void display_render_to_uart(display_elem *elems) {
-    if (! elems) {
-        // Was given elems for a state that isn't implemented yet.
-    }
+void display_render_to_uart() {
     int elem_row = 0;
+    int state_row = 0;
     int screen_row = 0;
+    int state_idx = 0;
+    int skipped_rows = 0;
+    display_elem *elems = (display_elem*)&elems_time_hm;
     while (1) {
-        if (! elems->impl) {
-            // Elements terminator.
-            break;
+        if (state_row == 24 || screen_row == 24 || ! elems->impl) {
+            // If we're still on the first state, we must complete it
+            // with blank rows before moving on to the second state.
+            if (state_idx == 0) {
+                while (state_row < 24 && screen_row < 24) {
+                    display_render_row_to_uart(0);
+                    state_row++;
+                    screen_row++;
+                }
+                if (screen_row < 24) {
+                    state_idx++;
+                    state_row = 0;
+                    elems = (display_elem*)&elems_time_hm;
+                }
+                else {
+                    break;
+                }
+            }
+            else {
+                // If we're already on the second state then we'll
+                // just complete the screen and then we're done.
+                while (screen_row < 24) {
+                    display_render_row_to_uart(0);
+                    screen_row++;
+                }
+                break;
+            }
         }
         const unsigned char *data_p = elems->impl(elems->arg, elem_row);
         if (! data_p) {
@@ -74,16 +99,20 @@ void display_render_to_uart(display_elem *elems) {
             continue;
         }
 
-        if (screen_row >= offset_amt) {
-            display_render_row_to_uart(*data_p);
+        if (skipped_rows < offset_amt) {
+            elem_row++;
+            state_row++;
+            skipped_rows++;
+            // but not screen_row, because we didn't actually
+            // render anything.
+            continue;
         }
+
+        display_render_row_to_uart(*data_p);
 
         elem_row++;
         screen_row++;
-    }
-    // Blank out any rows we skipped due to the offset.
-    for (int i = 0; i < offset_amt; i++) {
-        display_render_row_to_uart(0);
+        state_row++;
     }
 }
 
@@ -94,7 +123,7 @@ void display_render(void) {
     uart_println_int_hex("Transition Offset:    ", (int)offset_amt);
     uart_println_int_hex("Transition Direction: ", (int)offset_dir);
 
-    display_render_to_uart((display_elem*)&elems_time_hm);
+    display_render_to_uart();
 }
 
 void anim_to_right_task(void) {
