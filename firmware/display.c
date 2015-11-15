@@ -175,12 +175,7 @@ inline void display_render_to_uart(void) {
 }
 
 void display_render(void) {
-    uart_println_int_hex("\x1b[0;0HState 0: ", display_states[0]);
-    uart_println_int_hex("State 1: ", display_states[1]);
-    uart_println("");
-    uart_println_int_hex("Transition Offset:    ", (int)offset_amt);
-    uart_println_int_hex("Transition Direction: ", (int)offset_dir);
-
+    uart_puts("\x1b[0;0H");
     display_render_to_uart();
 }
 
