@@ -55,3 +55,18 @@ const unsigned char digits[] = {
 const unsigned char* digits_row(int val, int row) {
     return row < 4 ? (digits + (val * 4) + row) : 0;
 }
+
+const unsigned char* digits_narrow_row(int val, int row) {
+    int real_row = 0;
+    switch (row) {
+    case 0:
+      real_row = 0; break;
+    case 1:
+      real_row = 1; break;
+    case 2:
+      real_row = 3; break;
+    default:
+      return 0;
+    }
+    return digits + (val * 4) + real_row;
+}

@@ -70,12 +70,42 @@ const unsigned char* clock_element_row(int element, int row) {
     return digits_row(val, row);
 }
 
-display_elem elems_empty[] = {
+const unsigned char* clock_element_narrow_row(int element, int row) {
+    int val = 0;
+    switch (element) {
+    case HOUR_TENS:
+        val = clock_time.hours_bcd >> 4;
+        goto digit;
+    case HOUR_UNITS:
+        val = clock_time.hours_bcd & 0b1111;
+        goto digit;
+    case MINUTE_TENS:
+        val = clock_time.minutes_bcd >> 4;
+        goto digit;
+    case MINUTE_UNITS:
+        val = clock_time.minutes_bcd & 0b1111;
+        goto digit;
+    case SECOND_TENS:
+        val = clock_time.seconds_bcd >> 4;
+        goto digit;
+    case SECOND_UNITS:
+        val = clock_time.seconds_bcd & 0b1111;
+        goto digit;
+    default:
+        // Invalid clock element
+        return 0b00000000;
+    }
+
+ digit:
+    return digits_narrow_row(val, row);
+}
+
+const display_elem elems_empty[] = {
     { display_space_row, 1, 0 },
     { 0, 0, 0 },
 };
 
-display_elem elems_time_hm[] = {
+const display_elem elems_time_hm[] = {
     { display_space_row, 2, 0 },
     { clock_element_row, HOUR_TENS, 0 },
     { display_space_row, 1, 0 },
@@ -89,7 +119,7 @@ display_elem elems_time_hm[] = {
     { 0, 0, 0 },
 };
 
-display_elem elems_time_ms[] = {
+const display_elem elems_time_ms[] = {
     { display_space_row, 2, 0 },
     { display_elastic_space_row, 0, 0 },
     { clock_element_row, MINUTE_TENS, 0 },
@@ -104,7 +134,7 @@ display_elem elems_time_ms[] = {
     { 0, 0, 0 },
 };
 
-display_elem elems_menu_set_time[] = {
+const display_elem elems_menu_set_time[] = {
     { chars_row, (int)'C', 0 },
     { chars_row, (int)'h', 0 },
     { chars_row, (int)'T', 0 },
@@ -114,13 +144,61 @@ display_elem elems_menu_set_time[] = {
     { 0, 0, 0 },
 };
 
-display_elem elems_menu_set_date[] = {
+const display_elem elems_menu_set_date[] = {
     { chars_row, (int)'C', 0 },
     { chars_row, (int)'h', 0 },
     { chars_row, (int)'D', 0 },
     { chars_row, (int)'a', 0 },
     { chars_row, (int)'t', 0 },
     { chars_row, (int)'e', 0 },
+    { 0, 0, 0 },
+};
+
+const display_elem elems_set_hour[] = {
+    { clock_element_narrow_row, HOUR_TENS, 1 },
+    { display_space_row, 1, 0 },
+    { clock_element_narrow_row, HOUR_UNITS, 1 },
+    { display_space_row, 1, 0 },
+    { clock_element_narrow_row, MINUTE_TENS, 0 },
+    { display_space_row, 1, 0 },
+    { clock_element_narrow_row, MINUTE_UNITS, 0 },
+    { display_space_row, 1, 0 },
+    { clock_element_narrow_row, SECOND_TENS, 0 },
+    { display_space_row, 1, 0 },
+    { clock_element_narrow_row, SECOND_UNITS, 0 },
+    { display_space_row, 1, 0 },
+    { 0, 0, 0 },
+};
+
+const display_elem elems_set_min[] = {
+    { clock_element_narrow_row, HOUR_TENS, 0 },
+    { display_space_row, 1, 0 },
+    { clock_element_narrow_row, HOUR_UNITS, 0 },
+    { display_space_row, 1, 0 },
+    { clock_element_narrow_row, MINUTE_TENS, 1 },
+    { display_space_row, 1, 0 },
+    { clock_element_narrow_row, MINUTE_UNITS, 1 },
+    { display_space_row, 1, 0 },
+    { clock_element_narrow_row, SECOND_TENS, 0 },
+    { display_space_row, 1, 0 },
+    { clock_element_narrow_row, SECOND_UNITS, 0 },
+    { display_space_row, 1, 0 },
+    { 0, 0, 0 },
+};
+
+const display_elem elems_set_sec[] = {
+    { clock_element_narrow_row, HOUR_TENS, 0 },
+    { display_space_row, 1, 0 },
+    { clock_element_narrow_row, HOUR_UNITS, 0 },
+    { display_space_row, 1, 0 },
+    { clock_element_narrow_row, MINUTE_TENS, 0 },
+    { display_space_row, 1, 0 },
+    { clock_element_narrow_row, MINUTE_UNITS, 0 },
+    { display_space_row, 1, 0 },
+    { clock_element_narrow_row, SECOND_TENS, 1 },
+    { display_space_row, 1, 0 },
+    { clock_element_narrow_row, SECOND_UNITS, 1 },
+    { display_space_row, 1, 0 },
     { 0, 0, 0 },
 };
 
@@ -134,6 +212,12 @@ display_elem* display_elems_for_state(ui_state state) {
       return (display_elem*)elems_menu_set_time;
     case UI_MENU_SET_DATE:
       return (display_elem*)elems_menu_set_date;
+    case UI_SET_HOUR:
+      return (display_elem*)elems_set_hour;
+    case UI_SET_MIN:
+      return (display_elem*)elems_set_min;
+    case UI_SET_SEC:
+      return (display_elem*)elems_set_sec;
     default:
       return (display_elem*)elems_empty;
     }

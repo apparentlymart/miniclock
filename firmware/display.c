@@ -267,7 +267,18 @@ void anim_dispatch_task_impl(void) {
         sched_dequeue_task(task);
         active_transition_task = task;
 
-        if (trans_task->old_state == UI_TIME_HM && trans_task->new_state == UI_TIME_MS) {
+        if (trans_task->old_state >= UI_SET_HOUR && trans_task->new_state >= UI_SET_HOUR) {
+            // If we're transitioning between the states for setting different
+            // components of the time then we won't animate at all, since
+            // we're just moving the selection between on-screen elements.
+            offset_dir = 'h';
+            offset_amt = 0;
+            offset_target = 0;
+            display_states[0] = trans_task->new_state;
+            display_states[1] = trans_task->new_state;
+            anim_task.impl = anim_offset_task;
+        }
+        else if (trans_task->old_state == UI_TIME_HM && trans_task->new_state == UI_TIME_MS) {
             display_elastic_space_size = 12;
             offset_target = 0;
             display_states[0] = trans_task->new_state;
