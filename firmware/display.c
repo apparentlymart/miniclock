@@ -281,15 +281,15 @@ void anim_dispatch_task_impl(void) {
             display_states[1] = trans_task->new_state;
             anim_task.impl = anim_elastic_space_task;
         }
-        else if (trans_task->buttons == BUTTON_LEFT) {
+        else if (trans_task->buttons == BUTTON_RIGHT) {
             offset_dir = 'h';
-            offset_amt = 23;
+            offset_amt = 22;
             offset_target = 0;
             display_states[0] = trans_task->new_state;
             display_states[1] = trans_task->old_state;
             anim_task.impl = anim_offset_task;
         }
-        else if (trans_task->buttons == BUTTON_RIGHT) {
+        else if (trans_task->buttons == BUTTON_LEFT) {
             offset_dir = 'h';
             offset_amt = 0;
             offset_target = 23;
@@ -297,7 +297,7 @@ void anim_dispatch_task_impl(void) {
             display_states[1] = trans_task->new_state;
             anim_task.impl = anim_offset_task;
         }
-        else if (trans_task->buttons == BUTTON_DOWN) {
+        else if (trans_task->buttons == BUTTON_UP) {
             offset_dir = 'v';
             offset_amt = 0;
             offset_target = 7;
@@ -305,7 +305,7 @@ void anim_dispatch_task_impl(void) {
             display_states[1] = trans_task->new_state;
             anim_task.impl = anim_offset_task;
         }
-        else if (trans_task->buttons == BUTTON_UP) {
+        else if (trans_task->buttons == BUTTON_DOWN) {
             offset_dir = 'v';
             offset_amt = 7;
             offset_target = 0;
