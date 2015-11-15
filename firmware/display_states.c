@@ -1,6 +1,7 @@
 
 #include "display_states.h"
 #include "clock.h"
+#include "chars.h"
 #include "digits.h"
 
 typedef enum {
@@ -103,12 +104,36 @@ display_elem elems_time_ms[] = {
     { 0, 0, 0 },
 };
 
+display_elem elems_menu_set_time[] = {
+    { chars_row, (int)'C', 0 },
+    { chars_row, (int)'h', 0 },
+    { chars_row, (int)'T', 0 },
+    { chars_row, (int)'i', 0 },
+    { chars_row, (int)'m', 0 },
+    { chars_row, (int)'e', 0 },
+    { 0, 0, 0 },
+};
+
+display_elem elems_menu_set_date[] = {
+    { chars_row, (int)'C', 0 },
+    { chars_row, (int)'h', 0 },
+    { chars_row, (int)'D', 0 },
+    { chars_row, (int)'a', 0 },
+    { chars_row, (int)'t', 0 },
+    { chars_row, (int)'e', 0 },
+    { 0, 0, 0 },
+};
+
 display_elem* display_elems_for_state(ui_state state) {
     switch (state) {
     case UI_TIME_HM:
       return (display_elem*)elems_time_hm;
     case UI_TIME_MS:
       return (display_elem*)elems_time_ms;
+    case UI_MENU_SET_TIME:
+      return (display_elem*)elems_menu_set_time;
+    case UI_MENU_SET_DATE:
+      return (display_elem*)elems_menu_set_date;
     default:
       return (display_elem*)elems_empty;
     }
