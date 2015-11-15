@@ -21,4 +21,8 @@ void clock_await_change(sched_task *task);
 
 #define CLOCK_AWAIT_CHANGE() TASK_AWAIT_RAW(clock_await_change(&__task))
 
+void clock_update_hour(signed char delta);
+void clock_update_min(signed char delta);
+void clock_reset_sec(void);
+
 #endif

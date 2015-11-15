@@ -49,6 +49,14 @@ void clock_update_task_impl(void) {
     clock_notify_change();
 }
 
+void clock_schedule_update(void) {
+    // Schedule our updating task, unless it's already scheduled for
+    // some reason.
+    if (clock_update_task.list.next == (sched_list_head*)&clock_update_task) {
+        sched_run_task(&clock_update_task);
+    }
+}
+
 void clock_init(void) {
     i2c_init();
 
@@ -67,20 +75,65 @@ void clock_init(void) {
     sched_init_task_head(&clock_change_tasks);
     sched_init_task(&clock_update_task, &clock_update_task_impl);
 
-    // Schedule our updating task to do an initial read of the time.
-    sched_run_task(&clock_update_task);
+    clock_schedule_update();
+}
+
+unsigned char bcd_add(unsigned char val, signed char delta, unsigned char limit_bcd) {
+    int ret = ((signed char)val) + delta;
+    if ((ret & 0b1111) > 9) {
+        if (delta > 0) {
+            ret += 6;
+        }
+        else {
+            ret -= 6;
+        }
+    }
+    if (ret < 0) {
+        ret = limit_bcd;
+    }
+    else if (ret > limit_bcd) {
+        ret = 0;
+    }
+    // Truncate the result to one byte.
+    return (unsigned char)ret;
 }
 
 void clock_await_change(sched_task *task) {
     sched_queue_task(&clock_change_tasks, task);
 }
 
+void clock_update_hour(signed char delta) {
+    unsigned char new_hour = bcd_add(clock_time.hours_bcd, delta, 0x23);
+
+    // Write the new value into the hour register
+    char buf[2];
+    buf[0] = 0x2;
+    buf[1] = new_hour;
+
+    i2c_puts((char*)buf, 2);
+    clock_schedule_update();
+}
+
+void clock_update_min(signed char delta) {
+    unsigned char new_min = bcd_add(clock_time.minutes_bcd, delta, 0x59);
+
+    // Write the new value into the minute register
+    char buf[2];
+    buf[0] = 0x1;
+    buf[1] = new_min;
+
+    i2c_puts((char*)buf, 2);
+    clock_schedule_update();
+}
+
+void clock_reset_sec(void) {
+    // Write zero into address zero to reset the seconds.
+    i2c_puts("\0\0", 2);
+    clock_schedule_update();
+}
+
 void RTC_tick_isr(void) {
-    // Schedule our updating task, unless it's already scheduled for
-    // some reason.
-    if (clock_update_task.list.next == (sched_list_head*)&clock_update_task) {
-        sched_run_task(&clock_update_task);
-    }
+    clock_schedule_update();
 
     // Clear the interrupt flag.
     PINT_IST = 0b10000;

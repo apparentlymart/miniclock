@@ -3,6 +3,7 @@
 #include "buttons.h"
 #include "serial.h"
 #include "ui.h"
+#include "clock.h"
 #include "display.h"
 
 void ui_task(void) {
@@ -77,10 +78,10 @@ void ui_task(void) {
                 case BUTTON_LEFT:  state = UI_MENU_SET_TIME; continue;
                 case BUTTON_RIGHT: state = UI_SET_MIN;       continue;
                 case BUTTON_UP:
-                    // TODO: Increment the hour
+                    clock_update_hour(1);
                     continue;
                 case BUTTON_DOWN:
-                    // TODO: Decrement the hour
+                    clock_update_hour(-1);
                     continue;
                 default: continue;
             }
@@ -90,10 +91,10 @@ void ui_task(void) {
                 case BUTTON_LEFT:  state = UI_SET_HOUR;      continue;
                 case BUTTON_RIGHT: state = UI_SET_SEC;       continue;
                 case BUTTON_UP:
-                    // TODO: Increment the minute
+                    clock_update_min(1);
                     continue;
                 case BUTTON_DOWN:
-                    // TODO: Decrement the minute
+                    clock_update_min(-1);
                     continue;
                 default: continue;
             }
@@ -103,7 +104,7 @@ void ui_task(void) {
                 case BUTTON_LEFT:  state = UI_SET_MIN;       continue;
                 case BUTTON_UP:
                 case BUTTON_DOWN:
-                    // TODO: Reset the second
+                    clock_reset_sec();
                     continue;
                 default: continue;
             }
