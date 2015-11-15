@@ -5,6 +5,7 @@
 #include "buttons.h"
 #include "ui.h"
 #include "display.h"
+#include "clock.h"
 #include "scheduler.h"
 
 volatile int pressed = 0;
