@@ -18,11 +18,21 @@ typedef enum {
     YEAR_TENS,
 } TIME_ELEMENT;
 
+unsigned char display_elastic_space_size = 0;
+
 const unsigned char space_row_data = 0;
 const unsigned char colon_row_data = 0b00010100;
 
 const unsigned char* display_space_row(int num, int row) {
     return row < num ? &space_row_data : 0;
+}
+
+// The "elastic space" element allows a state to include a
+// space whose size can vary at runtime. This is used for
+// certain state-to-state transitions where a full-screen
+// transition is not appropriate.
+const unsigned char* display_elastic_space_row(int dummy, int row) {
+    return row < display_elastic_space_size ? &space_row_data : 0;
 }
 
 const unsigned char* display_colon_row(int dummy, int row) {
@@ -80,6 +90,7 @@ display_elem elems_time_hm[] = {
 
 display_elem elems_time_ms[] = {
     { display_space_row, 2, 0 },
+    { display_elastic_space_row, 0, 0 },
     { clock_element_row, MINUTE_TENS, 0 },
     { display_space_row, 1, 0 },
     { clock_element_row, MINUTE_UNITS, 0 },

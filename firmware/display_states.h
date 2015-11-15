@@ -11,6 +11,8 @@ typedef struct {
     unsigned char blink;
 } display_elem;
 
+extern unsigned char display_elastic_space_size;
+
 display_elem* display_elems_for_state(ui_state state);
 
 #endif

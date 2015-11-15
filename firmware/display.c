@@ -216,6 +216,37 @@ void anim_offset_task(void) {
     sched_run_task(&anim_dispatch_task);
 }
 
+void anim_elastic_space_task(void) {
+    TASK_START_EXT(anim_task, anim_task_pos);
+
+    while (1) {
+        display_render();
+        TASK_AWAIT_EXT_RAW(anim_task_pos, task_sleep(&anim_task, 10));
+        if (offset_target < display_elastic_space_size) {
+            display_elastic_space_size--;
+        }
+        else if (offset_target > display_elastic_space_size) {
+            display_elastic_space_size++;
+        }
+        if (offset_target == display_elastic_space_size) {
+            break;
+        }
+    }
+
+    // Always end in a consistent state.
+    display_elastic_space_size = 0;
+    // If we were moving away from zero then we actually want
+    // to land on the second state, so we need to swap them now.
+    if (offset_target != 0) {
+        display_states[0] = display_states[1];
+        offset_target = 0;
+    }
+    display_render();
+
+    sched_dequeue_task(&anim_task);
+    sched_run_task(&anim_dispatch_task);
+}
+
 void anim_dispatch_task_impl(void) {
 
     // This task impl expects to be called only when either there is no
@@ -236,7 +267,21 @@ void anim_dispatch_task_impl(void) {
         sched_dequeue_task(task);
         active_transition_task = task;
 
-        if (trans_task->buttons == BUTTON_LEFT) {
+        if (trans_task->old_state == UI_TIME_HM && trans_task->new_state == UI_TIME_MS) {
+            display_elastic_space_size = 12;
+            offset_target = 0;
+            display_states[0] = trans_task->new_state;
+            display_states[1] = trans_task->new_state;
+            anim_task.impl = anim_elastic_space_task;
+        }
+        else if (trans_task->old_state == UI_TIME_MS && trans_task->new_state == UI_TIME_HM) {
+            display_elastic_space_size = 0;
+            offset_target = 12;
+            display_states[0] = trans_task->old_state;
+            display_states[1] = trans_task->new_state;
+            anim_task.impl = anim_elastic_space_task;
+        }
+        else if (trans_task->buttons == BUTTON_LEFT) {
             offset_dir = 'h';
             offset_amt = 23;
             offset_target = 0;
