@@ -20,3 +20,9 @@ http://www.digikey.com/product-detail/en/LD1117S33TR/497-1242-1-ND/586242
 6 Buttons:
 http://www.digikey.com/product-detail/en/FSM4JSMATR/450-1759-2-ND/529675
 
+UWX1V470MCL1GB capacitor:
+http://www.digikey.com/product-detail/en/UWX1V470MCL1GB/493-2120-1-ND/590095
+
+8MHz oscillator:
+http://www.digikey.com/product-detail/en/SG-636PCE%208.0000MC0:ROHS/SER2815CT-ND/1532625
+
