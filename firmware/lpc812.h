@@ -316,4 +316,17 @@ typedef unsigned char byte;
 #define I2C_SLVQUAL0        REGISTER_32(I2C_BASE + 0x58)
 #define I2C_MONRXDAT        REGISTER_32(I2C_BASE + 0x80)
 
+// SPI0
+#define SPI0_CFG            REGISTER_32(SPI0_BASE + 0x00)
+#define SPI0_DLY            REGISTER_32(SPI0_BASE + 0x04)
+#define SPI0_STAT           REGISTER_32(SPI0_BASE + 0x08)
+#define SPI0_INTENSET       REGISTER_32(SPI0_BASE + 0x0c)
+#define SPI0_INTENCLR       REGISTER_32(SPI0_BASE + 0x10)
+#define SPI0_RXDAT          REGISTER_32(SPI0_BASE + 0x14)
+#define SPI0_TXDATCTL       REGISTER_32(SPI0_BASE + 0x18)
+#define SPI0_TXDAT          REGISTER_32(SPI0_BASE + 0x1c)
+#define SPI0_TXCTL          REGISTER_32(SPI0_BASE + 0x20)
+#define SPI0_DIV            REGISTER_32(SPI0_BASE + 0x24)
+#define SPI0_INTSTAT        REGISTER_32(SPI0_BASE + 0x28)
+
 #endif

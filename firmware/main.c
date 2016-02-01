@@ -2,6 +2,7 @@
 #include "lpc812.h"
 #include "serial.h"
 #include "i2c.h"
+#include "spi.h"
 #include "buttons.h"
 #include "ui.h"
 #include "display.h"
@@ -23,6 +24,7 @@ void main() {
     uart_init();
     uart_println("\x1b[2J\x1b[0;0Hbegin");
     sched_init();
+    spi_init();
     clock_init();
     buttons_init();
     display_init();
