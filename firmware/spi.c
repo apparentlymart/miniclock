@@ -5,68 +5,58 @@
 // TEMP DEBUG
 #include "serial.h"
 
-sched_list_head spi_tx_tasks;
-sched_task *active_tx_task = 0;
+#define SCLK GPIO_B8
+#define MOSI GPIO_B9
+#define SSEL GPIO_B15
 
 void spi_init(void) {
-    // Init our task queue first, since the code above will
-    // cause our interrupt handler to fire and we need to make
-    // sure the queue is valid (though empty) before that happens.
-    sched_init_task_head(&spi_tx_tasks);
 
-    // Put the SPI device in reset mode
-    SYSCON_PRESETCTRL &= ~BIT0;
+    // For now we use bit-bang SPI. Honestly, this is just because I
+    // couldn't figure out how to get the SPI bus to work as needed
+    // for these devices. In future I might have another go at it.
 
-    // Enable SPI clock
-    SYSCON_SYSAHBCLKCTRL |= BIT11;
+    // GPIO pin configuration
+    GPIO_DIRP0 |= BIT8;  // SCLK output
+    GPIO_DIRP0 |= BIT9;  // MOSI output
+    GPIO_DIRP0 |= BIT15; // SSEL output
 
-    // Pin assignments for SPI0
-    PINASSIGN3 |= (8 << 24);  // SCK
-    PINASSIGN4 |= (9 << 0);   // MOSI
-    PINASSIGN4 |= (1 << 8);   // MISO
-    PINASSIGN4 |= (15 << 16); // SSEL
+    // SSEL is active low, so start high for unasserted
+    SSEL = 1;
 
-    // Take SPI out of reset mode
-    SYSCON_PRESETCTRL |= BIT0;
-
-    SPI0_CFG = (
-        BIT0 |  // Enable
-        BIT2    // Master Mode
-    );
-    SPI0_DLY = (
-        (0xf << 0) |  // pre delay
-        (0xf << 4) |  // post delay
-        (0xf << 12)   // transfer delay
-    );
-    SPI0_DIV = 0xffff; // slowest SPI clock speed
+    // Rising edge of clock is data transmit
+    SCLK = 0;
 }
 
-static inline void spi_wait_for_master_idle(void) {
-    while (! (SPI0_STAT & BIT8)) {
-        // Just wait...
+static void _spi_tx(uint32_t val, int bits) {
+    for (int i = 0; i < 256; i++) {
+        SSEL = 0;
+    }
+    int ofs = bits - 1;
+    for (int i = bits; i > 0; i--) {
+        for (int j = 0; j < 128; j++) {
+            MOSI = (val >> ofs) & 1;
+        }
+        for (int j = 0; j < 128; j++) {
+            SCLK = 1;
+        }
+        val <<= 1;
+        for (int j = 0; j < 128; j++) {
+            MOSI = 0;
+        }
+        for (int j = 0; j < 128; j++) {
+            SCLK = 0;
+        }
+    }
+    MOSI = 0;
+    for (int i = 0; i < 512; i++) {
+        SSEL = 1;
     }
 }
 
 void spi_tx_8(uint8_t val) {
-    uint32_t txdatctl = (
-        (7 << 24) | // Transmission length is 8 bits
-        BIT22 |     // RXIGNORE
-        BIT20 |     // End of transmission
-        val
-    );
-
-    spi_wait_for_master_idle();
-    SPI0_TXDATCTL = txdatctl;
+    _spi_tx(val, 8);
 }
 
 void spi_tx_16(uint16_t val) {
-    uint32_t txdatctl = (
-        (15 << 24) | // Transmission length is 16 bits
-        BIT22 |      // RXIGNORE
-        BIT20 |      // End of transmission
-        val
-    );
-
-    spi_wait_for_master_idle();
-    SPI0_TXDATCTL = txdatctl;
+    _spi_tx(val, 16);
 }
