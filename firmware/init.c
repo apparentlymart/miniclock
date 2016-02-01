@@ -22,6 +22,9 @@ extern void Buttons_isr(void);
 // Exported by clock.o
 extern void RTC_tick_isr(void);
 
+// Exported by main.o
+extern void main(void);
+
 // The linker script refers to these, placing them at the boundaries
 // between sections.
 extern unsigned char INIT_DATA_VALUES;
