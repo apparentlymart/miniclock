@@ -8,6 +8,7 @@ void nmi_handler(void);
 
 // Exported by serial.o
 extern void UART0_isr(void);
+extern void uart_println(const char *s);
 
 // Exported by i2c.o
 extern void I2C_isr(void);
