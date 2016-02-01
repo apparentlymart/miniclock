@@ -124,39 +124,17 @@ void init() {
     main();
 }
 
-void spin_wave(unsigned char threshold) {
-    // For the moment we have pin 15 available to probe as a debugging
-    // output. This will stop being true once we have a display
-    // connected, but for the moment we'll pulse GPIO0_15 in a loop
-    // as the signal that we've executed an invalid interrupt.
-    unsigned char count;
-    while (1) {
-        count++;
-        if (count < threshold) {
-            GPIO_B15 = 1;
-        }
-        else {
-            GPIO_B15 = 0;
-        }
-    }
-}
-
 void default_irq_handler() {
-    // For the moment we have pin 15 available to probe as a debugging
-    // output. This will stop being true once we have a display
-    // connected, but for the moment we'll pulse GPIO0_15 in a loop
-    // as the signal that we've executed an invalid interrupt.
-    spin_wave(127);
-    /*
-    // Sadly we don't have any simple output devices through which we
-    // can signal an error safely, so we'll just halt.
-    while(1);*/
+    uart_println("Invalid IRQ");
+    __builtin_trap();
 }
 
 void hard_fault_handler() {
-    spin_wave(63);
+    uart_println("Hard Fault");
+    __builtin_trap();
 }
 
 void nmi_handler() {
-    spin_wave(63 + 127);
+    uart_println("NMI");
+    __builtin_trap();
 }

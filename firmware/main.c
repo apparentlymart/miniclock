@@ -17,16 +17,13 @@ void main() {
     // Enable GPIO port clock
     SYSCON_SYSAHBCLKCTRL |= BIT6;
 
-    // Pins 15 and 1 is a outputs, as temporary debugging signals.
-    GPIO_DIRP0 |= 1 << 15;
-    GPIO_DIRP0 |= 1 << 1;
-
     uart_init();
     uart_println("\x1b[2J\x1b[0;0Hbegin");
     sched_init();
     spi_init();
     clock_init();
-    buttons_init();
+    //buttons_init();
+    debug_init();
     display_init();
     ui_task();
     sched_main_loop(); // does not return
