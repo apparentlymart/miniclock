@@ -6,6 +6,7 @@
 #include "digits.h"
 #include "display_states.h"
 #include "clock.h"
+#include "spi.h"
 #include "display.h"
 
 int anim_active = 0;
@@ -28,15 +29,11 @@ void *anim_task_pos;
 
 sched_task time_change_task;
 
-void display_render_row_to_uart(unsigned char data) {
-    for (int i = 0; i < 8; i++) {
-        uart_putc(data & 0b10000000 ? 'O' : ' ');
-        data <<= 1;
-    }
-    uart_puts("\r\n");
+static inline void display_render_row(unsigned char data) {
+    spi_tx_8(data);
 }
 
-void display_render_to_uart_horiz(void) {
+void display_render_horiz(void) {
     // For Horiz, we visit rows in the first state first,
     // and then rows in the second state, until we've
     // filled the screen.
@@ -45,6 +42,11 @@ void display_render_to_uart_horiz(void) {
     int screen_row = 0;
     int state_idx = 0;
     int skipped_rows = 0;
+
+    // Reset the display data offset to the beginning of memory
+    spi_tx_16(0x09 << 8);
+    spi_tx_16(0x0a << 8);
+
     display_elem *elems = display_elems_for_state(display_states[0]);
     while (1) {
         if (state_row == 24 || screen_row == 24 || ! elems->impl) {
@@ -52,7 +54,7 @@ void display_render_to_uart_horiz(void) {
             // with blank rows before moving on to the second state.
             if (state_idx == 0) {
                 while (state_row < 24 && screen_row < 24) {
-                    display_render_row_to_uart(0);
+                    display_render_row(0);
                     state_row++;
                     screen_row++;
                 }
@@ -69,7 +71,7 @@ void display_render_to_uart_horiz(void) {
                 // If we're already on the second state then we'll
                 // just complete the screen and then we're done.
                 while (screen_row < 24) {
-                    display_render_row_to_uart(0);
+                    display_render_row(0);
                     screen_row++;
                 }
                 break;
@@ -94,10 +96,10 @@ void display_render_to_uart_horiz(void) {
         if (elems->blink && clock_time.half_second) {
             // For blinking elements, render blank if we're in
             // the second half of a second.
-            display_render_row_to_uart(0b00000000);
+            display_render_row(0b00000000);
         }
         else {
-            display_render_row_to_uart(*data_p);
+            display_render_row(*data_p);
         }
 
         elem_row++;
@@ -106,9 +108,13 @@ void display_render_to_uart_horiz(void) {
     }
 }
 
-void display_render_to_uart_vert(void) {
+void display_render_vert(void) {
     // For vert, we visit both states concurrently and then shift their
     // pixel data about to make them render one on top of the other.
+
+    // Reset the display data offset to the beginning of memory
+    spi_tx_16(0x09 << 8);
+    spi_tx_16(0x0a << 8);
 
     // Keep track of where we are in the elems of both states.
     int elem_rows[2] = {0, 0};
@@ -156,27 +162,22 @@ void display_render_to_uart_vert(void) {
             data[0] >> offset_amt |
             data[1] << (8 - offset_amt)
         );
-        display_render_row_to_uart(merged_data);
+        display_render_row(merged_data);
     }
 
 }
 
-inline void display_render_to_uart(void) {
+inline void display_render(void) {
     switch (offset_dir) {
     case 'h':
-        display_render_to_uart_horiz();
+        display_render_horiz();
         break;
     case 'v':
-        display_render_to_uart_vert();
+        display_render_vert();
         break;
     default:
         uart_println("Invalid offset direction");
     }
-}
-
-void display_render(void) {
-    uart_puts("\x1b[0;0H");
-    display_render_to_uart();
 }
 
 void anim_offset_task(void) {
@@ -358,6 +359,22 @@ static void time_change_task_impl(void) {
 }
 
 void display_init(void) {
+    spi_init();
+
+    // Initialize the display
+    spi_tx_16(
+        (0x0e << 8) | // "Global Driver Devices" register
+        1             // 2 devices (1 "extra" device)
+    );
+    spi_tx_16(
+        (0x0f << 8) | // "Global Driver Rows" register
+        0             // 1 row (0 "extra" rows)
+    );
+    spi_tx_16(
+        (0x0d << 8) | // "Global Panel Configuration" register
+        1             // Disable shutdown mode
+    );
+
     sched_init_task_head(&transition_tasks);
     sched_init_task(&anim_dispatch_task, anim_dispatch_task_impl);
     sched_init_task(&time_change_task, time_change_task_impl);
